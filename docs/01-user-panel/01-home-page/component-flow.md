@@ -134,7 +134,7 @@ flowchart TD
 | `useBannerPlatform` | `hooks/useBannerPlatform.ts` | — | Starts as `WebBanner` and flips after mount. See [polling-and-frequency.md](polling-and-frequency.md#vishnu7) for the extra request this causes |
 | `Home` | `pages/Home/index.tsx` | via `useGroupedFixtures` | `activeTab` is fixed to `'Cricket'` |
 | `TopGames` | `pages/Home/components/TopGames.tsx` | via `usePopularEvents` | `hidden xl:block`. The CSS hides it but it stays mounted, so its queries always run |
-| `usePopularEvents` | `hooks/usePopularEvents.ts` | `getPopularEvents`, `getMatches({})` | Fetches the whole fixture list only to build an `id → startTime` map |
+| `usePopularEvents` | `hooks/usePopularEvents.ts` | `getPopularEvents`, `getMatches({})` | Fetches the whole fixture list only to build an `id → startTime` map. Team-confirmed: to fetch popular events only (Q-19) |
 | `useGroupedFixtures` | `hooks/useGroupedFixtures.ts` | `getMatchesGroupedByCompetition` (3 s) | **Shared with Module 2** (Inplay, Sports). Groups, flattens, sorts by time, then puts league entries first |
 | `BettingTable` / `GroupedBettingTable` | `components/common/` | — | Row click → `/game-details/:sport/:id` |
 | `CasinoGames` | `pages/Home/components/CasinoGames.tsx` | `getHomeCasinoGames` | Same endpoint and arguments as the Dashboard, so they share one cache entry |

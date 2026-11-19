@@ -30,10 +30,12 @@ Because the endpoints share one slice, the same endpoint name defined twice reso
 | Endpoint name | Definition 1 | Definition 2 | Who imports which |
 |---|---|---|---|
 | `sendOtp`, `registerUser`, `login`, `logout`, `forgotPassword`, `resetPassword`, `changePassword`, `demoLogin` | `src/apis/authApi.ts` | `src/store/api/authApi.ts` | Only `store/api/authApi.ts` is imported (by `useLogin`, `useRegister`, `useForgotPassword`, `ProfileDrawer`, `ChangePasswordModal`, `pages/ChangePassword`). `src/apis/authApi.ts` is never imported, so its injection never runs. |
-| `getUserProfile`, `getUserWallets` | `src/apis/userApi.ts` (tags `UserDetails`, `overrideExisting: false`) | `src/store/api/userApi.ts` (tag `User`) | `walletSlice` imports `@/apis/userApi`. `userSlice`, `Header` and `OneClickBettingSection` import `@/store/api/userApi`. |
-| `getNotifications` | `src/store/api/contentApi.ts` (tag `Content`) | `src/store/api/notificationApi.ts` (no tags) | `NotificationBar` uses contentApi. `HomeLayout` and `AlertNotification` use notificationApi. |
+| `getUserProfile`, `getUserWallets` | `src/apis/userApi.ts` (no tags: `providesTags: ['UserDetails']` is commented out at `:18`; `getUserProfile` adds `t=<now>`; `overrideExisting: false`) | **`src/store/api/userApi.ts`** (tag `User` on `getUserProfile`; **in use**) | `userSlice`, `Header` and `OneClickBettingSection` import `@/store/api/userApi`. `walletSlice` imports `@/apis/userApi` only for the `getUserWallets.matchFulfilled` matcher, which matches by endpoint name either way. `apis/userApi.ts` stays in use for its other endpoints (`getContactSupport`, `getContactSupportAccount`). |
+| `getNotifications` | `src/store/api/contentApi.ts` (tag `Content`) | **`src/store/api/notificationApi.ts`** (no tags; sends `type` and `t=<now>`; **in use**) | `HomeLayout` and `AlertNotification` use notificationApi. `NotificationBar` imports the contentApi hook, but the request runs through the notificationApi definition; it passes only `{ type: 'Alert' }`, so nothing is lost. |
 
-`INFERRED` (RTK Query 1.9.7 behaviour): when a name is injected a second time without `overrideExisting: true`, the **first** injection is kept and a development-mode warning is logged. Which definition wins depends on module import order. The URLs are identical, so the HTTP traffic is the same either way. Only the cache tags differ, and that matters only if a mutation invalidates `UserDetails` or `Content`. Tracked in [open-questions.md](open-questions.md).
+`INFERRED` (RTK Query 1.9.7 behaviour): when a name is injected a second time without `overrideExisting: true`, the **first** injection is kept and a development-mode warning is logged, so module import order decides. A static trace of the import graph from `src/main.tsx` at HEAD (no lazy routes) evaluates `store/api/userApi.ts` before `apis/userApi.ts`, and `store/api/notificationApi.ts` before `store/api/contentApi.ts`. The definitions marked **in use** above are therefore the live ones, and the handbook documents only those (team decision, Q-01).
+
+Consequence: `getUserProfile` provides `User`, which the deposit/withdraw request mutation invalidates (`store/api/accountApi.ts:46`), so the profile refetches after such a request. `Content` is provided but never invalidated, and `UserDetails` is not used.
 
 ## Shared APIs (called from more than one component)
 
@@ -69,7 +71,28 @@ This section grows as modules are completed. "Canonical" means the full request,
 | rsplay | `getEvents` | [Module 1 › R5](../docs/01-user-panel/01-home-page/api-inventory.md#r5-getevents-canonical-shared-with-module-2) | [Module 2 route arguments](../docs/01-user-panel/02-inplay/api-inventory.md#rsplay-810884b), `useSidebar` |
 | rsplay | `getRaces` | [Module 1 › R6–R7](../docs/01-user-panel/01-home-page/api-inventory.md#r6r7-getraces-canonical) | [Module 2 In-Play and Racing usage](../docs/01-user-panel/02-inplay/api-inventory.md#rsplay-810884b) |
 | rsplay | `getSystemSettings` | [Module 1 › R9](../docs/01-user-panel/01-home-page/api-inventory.md#r9-getsystemsettings-canonical) | Layout (Phase 4), `FeatureRoute`, `RacingDetails` |
-| rsplay | `getCasinoGames` | Module 8 (pending) | [Module 1 usage R8](../docs/01-user-panel/01-home-page/api-inventory.md#r8-getcasinogames-home-usage) |
+| rsplay | `getCasinoGames` | Not covered (Module 8 is documented from vishnu7 only) | [Module 1 usage R8](../docs/01-user-panel/01-home-page/api-inventory.md#r8-getcasinogames-home-usage) |
+| vishnu7 | `getCasinoGames`, `getCasinoCategories`, `getCasinoProviders` | [Module 8 › C1–C3](../docs/01-user-panel/08-casino/api-inventory.md) | Lobby `/casino` |
+| vishnu7 | `createCasinoSession` | [Module 8 › C4](../docs/01-user-panel/08-casino/api-inventory.md#c4-createcasinosession) | Every game launch (lobby, Dashboard, Home, In-play, Sports) |
+| vishnu7 | `getLobbyUrlById` | [Module 8 › C5](../docs/01-user-panel/08-casino/api-inventory.md#c5-getlobbyurlbyid) | `/casino-qtech` |
+| rsplay | `getScorecard` | [Modules 5–7 › M1](../docs/01-user-panel/05-scorecard-live-tv/api-inventory.md#m1-getscorecard) | Game detail (scorecard + Live TV URLs), race detail (Live TV URL) |
+| rsplay | `getLiveScorecard` | [Modules 5–7 › M2](../docs/01-user-panel/05-scorecard-live-tv/api-inventory.md#m2-getlivescorecard) | Cricket game detail, 1 s |
+| rsplay | `getMyTransactions` | [Module 4 › S1](../docs/01-user-panel/04-reports/api-inventory.md#s1-getmytransactions) | Account statement; also the unrouted `Reports/Transactions.tsx` |
+| rsplay | `exportGameTransactions` | [Module 4 › S2](../docs/01-user-panel/04-reports/api-inventory.md#s2-exportgametransactions) | Account statement CSV/PDF |
+| rsplay | `getBetHistory` | [Module 4 › S3](../docs/01-user-panel/04-reports/api-inventory.md#s3-getbethistory) | `CurrentBets` (game detail, `betTime: CURRENT`), Unsettled bets (deferred) |
+| rsplay | `exportBetHistory` | [Module 4 › S4](../docs/01-user-panel/04-reports/api-inventory.md#s4-exportbethistory) | Bet history CSV/PDF; also Unsettled bets (deferred) |
+| rsplay | `getProfitLoss` | [Module 4 › S5](../docs/01-user-panel/04-reports/api-inventory.md#s5-getprofitloss) | Profit & loss (two calls) |
+| rsplay | `getCasinoRoundHistory` | [Module 4 › S6](../docs/01-user-panel/04-reports/api-inventory.md#s6-getcasinoroundhistory) | Casino bet history |
+| rsplay | `getDepositAccounts` | [Module 9 › W1](../docs/01-user-panel/09-wallet/api-inventory.md#w1-getdepositaccounts) | Deposit method selection (admin receiving accounts) |
+| rsplay | `getDepositWithdraw` | [Module 9 › W2](../docs/01-user-panel/09-wallet/api-inventory.md#w2-getdepositwithdraw) | Deposit history (`Credit`), withdraw history (`Debit`) |
+| rsplay | `depositWithdrawRequest` | [Module 9 › W3](../docs/01-user-panel/09-wallet/api-inventory.md#w3-depositwithdrawrequest) | UPI/bank deposit and bank/UPI withdraw |
+| rsplay | `uploadFile` | [Module 9 › W4](../docs/01-user-panel/09-wallet/api-inventory.md#w4-uploadfile) | Deposit proof, crypto wallet QR |
+| rsplay | `getBankAccount`, `getUpiAccount` | [Module 9 › W5–W6](../docs/01-user-panel/09-wallet/api-inventory.md#w5-getbankaccount) | Withdraw saved accounts |
+| rsplay | `addBankAccount`, `addUpiAccount`, `deleteAccount` | [Module 9 › W7–W9](../docs/01-user-panel/09-wallet/api-inventory.md#w7-addbankaccount) | Add account modal, delete icon |
+| rsplay | `getUserWallets` | [Module 9 › W10](../docs/01-user-panel/09-wallet/api-inventory.md#w10-getuserwallets) | Header balance (5 s); withdrawable balance |
+| rsplay | `getIsMasterOwner` | [Module 9 › W11](../docs/01-user-panel/09-wallet/api-inventory.md#w11-getismasterowner) | Deposit/withdraw access rule |
+| rsplay | `createCryptoDepositWithdrawRequest` | [Module 9 › W12](../docs/01-user-panel/09-wallet/api-inventory.md#w12-createcryptodepositwithdrawrequest) | Crypto deposit (USDT) and withdraw (INR) |
+| rsplay | `getCryptoAccounts`, `getCryptoNetwork`, `addCryptoAccount`, `deleteCryptoAccount` | [Module 9 › W13–W16](../docs/01-user-panel/09-wallet/api-inventory.md#w13-getcryptoaccounts) | Saved crypto wallets |
 | vishnu7 | `getBanners` | [Module 1 › V1–V2](../docs/01-user-panel/01-home-page/api-inventory.md#v1v2-getbanners-canonical-vishnu7) | |
 | vishnu7 | `getHomeCasinoGames`, `getHomeProviderGames` | [Module 1 › V3–V4](../docs/01-user-panel/01-home-page/api-inventory.md#v3v4-gethomecasinogames-gethomeprovidergames-canonical) | |
 | vishnu7 | `getMatchesGroupedByCompetition` | [Module 1 › V6](../docs/01-user-panel/01-home-page/api-inventory.md#v6-getmatchesgroupedbycompetition-canonical-shared-with-module-2) | [Module 2 In-Play and sport-route arguments](../docs/01-user-panel/02-inplay/api-inventory.md#vishnu7-6f3b811), `SearchDropdown` |
@@ -97,7 +120,7 @@ How the handbook applies this:
 | `GET /exposure/bookset/calculation` | `getBooksetCalc` | `getBookset` |
 | `GET /exposure/profit-loss` | `getFancyProfitLoss` | `getSessionPL` |
 | `GET events/scorecard/:eventId` | `getScorecard` | `getMediaUrls` |
-| `GET /events/raw-scorecard/:eventId` | `getRawScorecard` **and** `getLiveScorecard` (same URL, two endpoints) | `getRawScore` |
+| `GET /events/raw-scorecard/:eventId` | `getLiveScorecard` (an unused duplicate, `getRawScorecard`, is also defined) | `getRawScore` |
 | `GET /fixture` | `getEvents` | `getMatches` |
 | `GET /competitions` | `getCompetitionById` | `getSportCompetitions` |
 | `GET/PUT /stakeset` | `getStakeSet` / `updateStakeSet` | `getStakes` / `updateStakes` |
@@ -135,9 +158,9 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 
 | Endpoint | Type | Method | URL (as written in source) | Cache tags | Consumers (files calling the hook) | Notes |
 |---|---|---|---|---|---|---|
-| `getUserProfile` (L12) | query | GET | `/users/me` | P:['UserDetails'] | `components/Header.tsx`<br>`components/OneClickBettingSection.tsx`<br>`store/slices/userSlice.ts` | **Duplicate endpoint name** (see the duplicates section) |
-| `updateUserInfo` (L20) | mutation | PATCH | `users/me` | I:['UserDetails'] | — | Defined but not called (`NOT FOUND` in consumers) |
-| `getUserWallets` (L44) | query | GET | `/users/me/wallets` | — | `components/Header.tsx`<br>`store/slices/walletSlice.ts` | **Duplicate endpoint name** (see the duplicates section) |
+| `getUserProfile` (L12) | query | GET | `/users/me` | — (`UserDetails` commented out) | `components/Header.tsx`<br>`components/OneClickBettingSection.tsx`<br>`store/slices/userSlice.ts` | **Duplicate, not in use**: the other definition loads first and is the live one (Q-01; see the duplicates section) |
+| `updateUserInfo` (L20) | mutation | PATCH | `users/me` | — (`UserDetails` commented out) | — | Defined but not called (`NOT FOUND` in consumers) |
+| `getUserWallets` (L44) | query | GET | `/users/me/wallets` | — | `components/Header.tsx`<br>`store/slices/walletSlice.ts` | **Duplicate, not in use**: the other definition loads first and is the live one (Q-01; see the duplicates section) |
 | `getContactSupport` (L51) | query | GET | `/contact-support` | — | `components/LoginModal.tsx`<br>`components/MobileFooterBar.tsx`<br>`components/SignupModal.tsx`<br>`utils/constants.ts` |  |
 | `getContactSupportAccount` (L59) | query | GET | `/contact-support/show-account` | — | `components/MobileFooterBar.tsx`<br>`components/Sidebar.tsx` | transform |
 
@@ -203,7 +226,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 | `getCasinoGames` (L15) | query | GET | `/casino/games` + optional query string | — | `pages/CasinoGames/hooks/useCasinoGames.ts`<br>`pages/Home/components/PopularGames.tsx` |  |
 | `getCasinoCategories` (L34) | query | GET | `/casino/category` + optional query string | P:['CasinoCategories'] | `pages/CasinoGames/hooks/useCasinoGames.ts` |  |
 | `getCasinoProviders` (L52) | query | GET | `/casino/providers` + optional query string | P:['CasinoProviders'] | — | Defined but not called (`NOT FOUND` in consumers) |
-| `getCasinoRoundHistory` (L73) | query | GET | `/casino/round/history?${params.toString()}` | P:['CasinoRoundHistory'] | `pages/Reports/CasinoBetHistory.tsx`<br>`pages/Reports/OLDCasinoBetHistory.tsx` |  |
+| `getCasinoRoundHistory` (L73) | query | GET | `/casino/round/history?${params.toString()}` | — (`providesTags` is commented out, `casinoApi.ts:95`) | `pages/Reports/CasinoBetHistory.tsx`<br>`pages/Reports/OLDCasinoBetHistory.tsx` (unrouted) |  |
 | `createCasinoSession` (L97) | mutation | POST | `/casino/create-session/${id}` | I:['CasinoSession'] | `pages/CasinoGames/hooks/useCasinoGames.ts`<br>`pages/Game/hooks/useGame.ts` |  |
 
 ### `src/store/api/casinoHomePageApi.ts`
@@ -234,7 +257,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 | Endpoint | Type | Method | URL (as written in source) | Cache tags | Consumers (files calling the hook) | Notes |
 |---|---|---|---|---|---|---|
 | `getBanners` (L6) | query | GET | `/banners` | P:['Content'] | `components/WelcomeBannerModal.tsx`<br>`pages/Home/components/MainBanner.tsx`<br>`pages/Home/components/SecondaryBanner.tsx`<br>`pages/Sports/components/SportBanner.tsx` |  |
-| `getNotifications` (L14) | query | GET | `/notifications` | P:['Content'] | `components/AlertNotification.tsx`<br>`layouts/HomeLayout.tsx`<br>`pages/Inplay/components/NotificationBar.tsx` | **Duplicate endpoint name** (see the duplicates section) |
+| `getNotifications` (L14) | query | GET | `/notifications` | P:['Content'] | `components/AlertNotification.tsx`<br>`layouts/HomeLayout.tsx`<br>`pages/Inplay/components/NotificationBar.tsx` | **Duplicate, not in use**: the other definition loads first and is the live one (Q-01; see the duplicates section) |
 
 ### `src/store/api/depositApi.ts`
 
@@ -255,7 +278,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 | `getScorecard` (L317) | query | GET | `events/scorecard/${eventId}` | — | `pages/GameDetails/Hooks/useCatalogData.ts`<br>`pages/RacingInside/index.tsx` |  |
 | `getRaces` (L324) | query | GET | `/fixture/race` | P:['Sports'] | `pages/Home/components/SportsListing.tsx`<br>`pages/Home/components/SportsListingLogin.tsx`<br>`pages/Inplay/index.tsx`<br>`pages/Racing/index.tsx` |  |
 | `getRaceDetails` (L346) | query | GET | `/catalogue/${eventId}?t=${Date.now()}` | P:['Sports'] | `pages/RacingInside/index.tsx` |  |
-| `getRawScorecard` (L353) | query | GET | `/events/raw-scorecard/${eventId}` | — | `pages/GameDetails/components/CricketScoreCard.tsx` | transform |
+| `getRawScorecard` (L353) | query | GET | `/events/raw-scorecard/${eventId}` | — | `pages/GameDetails/components/CricketScoreCard.tsx` | transform. Unused (its only consumer is imported by no file); not documented in Modules 5–7 |
 | `getLiveScorecard` (L360) | query | GET | `/events/raw-scorecard/${eventId}` | — | `pages/GameDetails/components/CustomLiveScoreCard.tsx` | transform |
 
 ### `src/store/api/exportReportApi.ts`
@@ -342,7 +365,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 | `getUserBankAccounts` (L76) | query | GET | `/bank` | P:['WithdrawAccount'] | — | Defined but not called (`NOT FOUND` in consumers) |
 | `deleteBankAccount` (L85) | mutation | DELETE | `/bank/${id}` | I:['WithdrawAccount'] | — | Defined but not called (`NOT FOUND` in consumers) |
 | `getCryptoAccounts` (L93) | query | GET | `/crypto` | P:['CryptoWithdrawWallet'] | `pages/Withdraw/CryptoAccountList.tsx` |  |
-| `getCryptoNetwork` (L101) | query | GET | `/crypto/networks` | P:['CryptoWithdrawWallet'] | `pages/Withdraw/CryptoNetworkSelector.tsx` |  |
+| `getCryptoNetwork` (L101) | query | GET | `/crypto/networks` | — (`providesTags` commented out) | `pages/Withdraw/CryptoNetworkSelector.tsx` |  |
 | `addCryptoAccount` (L110) | mutation | POST | `/crypto` | I:['CryptoWithdrawWallet'] | `pages/Withdraw/CryptoWalletModal.tsx`<br>`pages/Withdraw/components/CryptoAccountForm.tsx` |  |
 | `deleteCryptoAccount` (L119) | mutation | DELETE | `/crypto/${id}` | I:['CryptoWithdrawWallet', 'DepositWithdraw'] | `pages/Withdraw/CryptoWithdrawForm.tsx` |  |
 

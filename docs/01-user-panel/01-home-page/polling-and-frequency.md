@@ -81,7 +81,7 @@ The Dashboard has **no page-level polling**.
 |---|---|---|---|
 | `GET /fixture/groupByCompetition?sport=Cricket&sortBy=time` | **every 3 s** | `POLLING` | `useGroupedFixtures.ts:25-30` (hook default) |
 | `GET /events/popular` | once | `ON_MOUNT` | Runs even when `TopGames` is CSS-hidden (below `xl`) |
-| `GET /fixture` (no params) | once | `ON_MOUNT` | Full fixture list, used only for start times (Q-19) |
+| `GET /fixture` (no params) | once | `ON_MOUNT` | Full fixture list, used only for start times. Team-confirmed: to be removed (Q-19) |
 | `GET /casino/home/games` | once | `ON_MOUNT` | |
 | layout (`/users/me`, wallets, contact support, alerts) | as above | | |
 
@@ -91,7 +91,7 @@ The Dashboard has **no page-level polling**.
 
 ### Platform flip (`useBannerPlatform`): extra request on narrow screens
 
-`useBannerPlatform` initialises `isMobile = false` and only measures `window.innerWidth` inside `useEffect` (`hooks/useBannerPlatform.ts:4-11`). The first render therefore subscribes to `platform: 'WebBanner'`. On screens narrower than 1080 px the effect then flips it to `AppBanner`, which is a new cache key and a second request. `INFERRED`: on mobile, each of the `MainBanner` and `WellcomeBanner` queries is likely requested **twice** (Web, then App), and the Web response is discarded. Confirming this needs a network capture; Q-17.
+`useBannerPlatform` initialises `isMobile = false` and only measures `window.innerWidth` inside `useEffect` (`hooks/useBannerPlatform.ts:4-11`). The first render therefore subscribes to `platform: 'WebBanner'`. On screens narrower than 1080 px the effect then flips it to `AppBanner`, which is a new cache key and a second request. `INFERRED`: on mobile, each of the `MainBanner` and `WellcomeBanner` queries is likely requested **twice** (Web, then App), and the Web response is discarded. The team confirmed this as a defect to be fixed (Q-17).
 
 Resizing across 1080 px also triggers new requests (`ON_STATE_CHANGE`), but each platform is fetched only once within the 60 s cache window.
 

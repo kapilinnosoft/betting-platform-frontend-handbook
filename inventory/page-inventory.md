@@ -42,8 +42,8 @@ Every route below sits inside `<Route element={<HomeLayout />}>` (`App.tsx:59`).
 | `/rules` | `pages/Rules` | — |
 | `/referral` | `pages/Referral` | — |
 | `/coins` | `pages/Coins` | — |
-| `/deposit` | `pages/Deposit`, wrapped in `<FeatureRoute feature="deposit">` | — |
-| `/withdraw` | `pages/Withdraw`, wrapped in `<FeatureRoute feature="withdrawal">` | — |
+| `/deposit` | `pages/Deposit`, wrapped in `<FeatureRoute feature="deposit">` | 9 Deposit and Withdraw |
+| `/withdraw` | `pages/Withdraw`, wrapped in `<FeatureRoute feature="withdrawal">` | 9 Deposit and Withdraw |
 | `*` | `NotFoundPage` (outside `HomeLayout`) | — |
 
 Notes:
@@ -51,7 +51,7 @@ Notes:
 - **What `FeatureRoute` does** (`src/components/common/FeatureRoute.tsx`): it polls `/system` every 30 s and redirects demo users away from deposit and withdrawal. The checks after line 30 are documented with the wallet features (outside Phase 1 scope).
 - **Login is a modal, not a route.** `pages/Auth/Login` is exported from `routes/index.tsx` but has no route; login, signup and forgot-password open through `ModalManager` and Redux `modalSlice`. `OBSERVED` (`App.tsx:131-132`).
 - **Pages that are routed elsewhere or dead.** `src/routes/index.tsx:29-41` comments out exports for `Markets`, `Casino`, `CasinoPlayground`, `QTECHLobby`, `ActivityLog`, `CasinoResults` and similar. These are template leftovers and are **not routed** in rsplay.
-- **Unrouted report pages.** `pages/Reports/Transactions.tsx`, `Turnover.tsx` and `OLDCasinoBetHistory.tsx` exist but have no route in `App.tsx`. Menu entries for `/wallet`, `/transactions`, `/turnover-history`, `/commission-report` and `/my-profile` appear only in **commented-out** config (`src/utils/constants.ts:263-274`). `/support` is still linked live, from `components/Sidebar.tsx:87` and `pages/NotFoundPage.tsx:59`, but **no `/support` route exists**, so it falls through to `NotFoundPage` (`OBSERVED`; tracked as Q-07).
+- **Unrouted report pages.** `pages/Reports/Transactions.tsx`, `Turnover.tsx` and `OLDCasinoBetHistory.tsx` exist but have no route in `App.tsx`. Menu entries for `/wallet`, `/transactions`, `/turnover-history`, `/commission-report` and `/my-profile` appear only in **commented-out** config (`src/utils/constants.ts:263-274`). `/support` is still linked live, from `components/Sidebar.tsx:87` and `pages/NotFoundPage.tsx:59`, but **no `/support` route exists**, so it falls through to `NotFoundPage` (`OBSERVED`; Q-07, team-confirmed defect).
 - **App-level hooks** (run on every route): `useBfcacheAuthGuard` (bfcache restore without a token → `window.location.replace('/')`), `useReferralRegisterModal`, `useFcmNotifications` (`App.tsx:41-43`).
 
 ## vishnu7user (`6f3b811`): `src/App.tsx` at HEAD
@@ -83,7 +83,7 @@ The maintenance switch is the same as rsplay's (`App.tsx:36-42`).
 | `*` | none | — | `NotFoundPage` | — |
 
 Notes:
-- **What `ProtectedRoute` does** (`src/components/common/ProtectedRoute.tsx`): guest status comes from `isGuestUser()`, which checks whether the `access-token` cookie is missing (`src/utils/index.ts:11`). Guests **and demo users** get `setLoginModalOpen(true)` and are redirected to `/home`. `OBSERVED`. The dispatch happens during render rather than in an effect (Q-08).
+- **What `ProtectedRoute` does** (`src/components/common/ProtectedRoute.tsx`): guest status comes from `isGuestUser()`, which checks whether the `access-token` cookie is missing (`src/utils/index.ts:11`). Guests **and demo users** get `setLoginModalOpen(true)` and are redirected to `/home`. `OBSERVED`. The dispatch happens during render rather than in an effect (Q-08, team-confirmed defect; to be fixed).
 - **What `SelfRegisteredRoute` does**: it redirects to `/dashboard` unless `useIsSelfRegistered()` is true.
 - **Unrouted pages.** `/login` and `/signup` (`AuthLayout`) are commented out (`App.tsx:50-53`). `/user/casino-results` and `/user/live-casino-bets` are also commented out (`App.tsx:63-64`). Their page folders exist but are not reachable.
 - **Uncommitted changes, out of scope.** The working tree also edits `App.tsx` and `routes/index.tsx` and adds a `FaviconDemo` page.

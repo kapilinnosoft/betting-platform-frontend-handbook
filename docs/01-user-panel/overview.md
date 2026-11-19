@@ -40,6 +40,8 @@ One common module covers catalogue markets, odds selection, bet slip, limits, ex
 
 ## Module 4: Reports & Statements
 
+**Documented →** [04-reports/overview.md](04-reports/overview.md) (rsplay only, four reports: Account statement, Bet history, Profit & loss, Casino bet history; team decisions 2026-11-18 and 2026-11-19. The table below is the original survey)
+
 | Report | rsplay route → endpoint | vishnu7 route → endpoint |
 |---|---|---|
 | Account statement | `/account-statement` → `getMyTransactions`, `exportGameTransactions` | `/user/account-statement` → `getAccountStatement`, `getStatementMarketBets`, `getEventProfitLossBets`, `exportAccountStatement`, `getMyExports` |
@@ -52,30 +54,38 @@ One common module covers catalogue markets, odds selection, bet slip, limits, ex
 | Bonus statement | `/bonus-statement` → `getBonusApplicants` | — |
 | Results | `/results` → `getResults` | — |
 | Activity log | — | `/user/activity-logs` → `getActivityLog` |
-| Shared filter UI | `pages/Reports/components/FilterContainer.tsx` | per-page `components/ReportForm.tsx` |
+| Shared filter UI | none: each page builds its own filter row (`FilterContainer.tsx` exists but is imported nowhere) | per-page `components/ReportForm.tsx` |
 
 ## Module 5: Scorecard
+
+**Documented →** [05-scorecard-live-tv/overview.md](05-scorecard-live-tv/overview.md), together with Modules 6 and 7 (rsplay only, 2026-11-19). The tables below are the original survey.
 
 | | rsplay | vishnu7 |
 |---|---|---|
 | Endpoint | `getScorecard` `GET events/scorecard/:eventId`: response has `scorecardUrl`, `liveTvUrl` | `getMediaUrls` (same path): stored in `mediaSlice` |
 | Components | `GameDetails/components/Scorecard.tsx`, `LiveScoreCard.tsx` | `Markets/components/Media.tsx` |
-| Skip rules | demo users, guests, no `eventId` | `NOT CONFIRMED FROM SOURCE` yet |
+| Skip rules | demo users, guests, no `eventId` | Not covered (Modules 5–7 documented from rsplay only) |
 
 ## Module 6: Live TV
+
+**Documented →** [05-scorecard-live-tv/scorecard-and-live-tv.md](05-scorecard-live-tv/scorecard-and-live-tv.md#live-tv-module-6)
 
 | | rsplay | vishnu7 |
 |---|---|---|
 | Source | `liveTvUrl` from `getScorecard` (game detail `useCatalogData.ts:116`, race detail `RacingInside/index.tsx:32`) | `liveTvUrl` from `getMediaUrls` → `mediaSlice.setMediaUrls`; `ui.liveTvEnabled`; TV tab in `Markets` |
-| Player | `NOT CONFIRMED FROM SOURCE` (iframe vs player, checked in Module 6) | `NOT CONFIRMED FROM SOURCE` |
+| Player | `<iframe src={liveTvUrl} allowFullScreen>` behind an on/off toggle (see Module 6 doc) | Not covered |
 
 ## Module 7: Raw Scorecard
 
+**Documented →** [05-scorecard-live-tv/raw-scorecard.md](05-scorecard-live-tv/raw-scorecard.md)
+
 | | rsplay | vishnu7 |
 |---|---|---|
-| Endpoint | `GET /events/raw-scorecard/:eventId` as **two** endpoints: `getRawScorecard` (2 s, `CricketScoreCard.tsx`) and `getLiveScorecard` (1 s, `CustomLiveScoreCard.tsx`, auth only). Both `transformResponse: dropScorecardUrl` | `getRawScore` (1 s, `Media.tsx`, cricket only, keyed by `externalId`), `scorecard/ScoreCardStrip.tsx` |
+| Endpoint | `GET /events/raw-scorecard/:eventId` → `getLiveScorecard` (1 s, `CustomLiveScoreCard.tsx`, auth only, `transformResponse: dropScorecardUrl`) | `getRawScore` (1 s, `Media.tsx`, cricket only, keyed by `externalId`), `scorecard/ScoreCardStrip.tsx` |
 
 ## Module 8: Casino
+
+**Documented →** [08-casino/overview.md](08-casino/overview.md) (vishnu7 only, by team decision 2026-11-19; the table below is the original survey)
 
 | | rsplay | vishnu7 |
 |---|---|---|
@@ -88,5 +98,9 @@ One common module covers catalogue markets, odds selection, bet slip, limits, ex
 
 ---
 
+## Module 9: Deposit and Withdraw
+
+**Documented →** [09-wallet/overview.md](09-wallet/overview.md) (rsplay only, team decision 2026-11-19). UPI, bank and crypto deposit; bank, UPI and crypto withdraw from saved accounts; add/delete accounts; request history. The other implementation has no deposit or withdraw pages.
+
 ## Out of Phase 1 scope (noted for completeness)
-Login and Signup are documented as a supplemental common module in [authentication](authentication/overview.md); the formal eight-module Phase 1 numbering is unchanged. Other out-of-scope features include deposit/withdraw/bank/UPI/crypto, coins, referral, profile, change password, MFA, and push notifications. See the [central API inventory](../../inventory/api-inventory.md).
+Login and Signup are documented as a supplemental common module in [authentication](authentication/overview.md); the formal eight-module Phase 1 numbering is unchanged. Deposit and withdraw are now documented as [Module 9](09-wallet/overview.md) (rsplay only, approved 2026-11-19). Other out-of-scope features include coins, referral, profile, change password, MFA, and push notifications. See the [central API inventory](../../inventory/api-inventory.md).

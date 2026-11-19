@@ -15,7 +15,7 @@ The imported `NotificationBar` is not rendered by `pages/Inplay`; global alert p
 
 ### Fixture fields used
 
-The `EventItem` response type is declared in `rsplay:src/store/api/eventsApi.ts:43-75`, but `useFixtureData` reads `runners` (plural), `marketId` and `isPremiumFancy`, which do not match that declaration. This is a source/type discrepancy, not a confirmed backend contract; see Q-14 (`rsplay:src/pages/Inplay/Hooks/useFixtureData.ts:61-95`, `transformEvents`).
+The `EventItem` response type is declared in `rsplay:src/store/api/eventsApi.ts:43-75`, but `useFixtureData` reads `runners` (plural), `marketId` and `isPremiumFancy`, which do not match that declaration. The team-provided response (Q-14) confirms `runners`, `marketId` and `isPremiumFancy`, so the code is right and the type is out of date; see [Module 1 R5 › backend fixture item](../01-home-page/api-inventory.md#r5-getevents-canonical-shared-with-module-2) (`rsplay:src/pages/Inplay/Hooks/useFixtureData.ts:61-95`, `transformEvents`).
 
 The race list reads `fixture[].markets[]`, `id`, `sport`, and market `name`, `startTime`, and `externalId`; it filters on market presence and the `forecast` name (`rsplay:src/pages/Inplay/index.tsx:48-56,94-130`, `Inplay`; `rsplay:src/pages/Racing/index.tsx:46-52`, `Racing`). Full race response fields remain in Module 1 R6-R7.
 

@@ -60,7 +60,8 @@ export interface CapabilityMap {
   remainder: string;
 }
 
-const VISUAL_GUIDE_FILE = 'visual-guide.html';
+/** A non-overview Markdown document containing this marker becomes the module's "Visual guide" tab. */
+const VISUAL_GUIDE_MARKER = '<!-- portal:visual-guide -->';
 const INVENTORY_PAGES = new Set([
   'api-inventory.md',
   'polling-and-frequency-inventory.md',
@@ -72,7 +73,7 @@ const INVENTORY_PAGES = new Set([
 ]);
 
 export function displayTitle(title: string): string {
-  return title.replace(/^Module \d+:?\s*/i, '').replace(/\s*\([^)]*\)\s*$/, '').trim() || title;
+  return title.replace(/^Modules? \d+(?:\s*[–-]\s*\d+)?:?\s*/i, '').replace(/\s*\([^)]*\)\s*$/, '').trim() || title;
 }
 
 export interface OpenQuestion {
@@ -202,13 +203,10 @@ export async function getDocumentedModules(): Promise<ModuleDocument[]> {
       }));
       docs.sort((a, b) => a.key === 'overview' ? -1 : b.key === 'overview' ? 1 : a.title.localeCompare(b.title));
 
-      // A module that ships a standalone visual guide gets a portal "Visual guide" tab. It is
-      // built from the Markdown document that links to the guide (its capability table), so the
-      // facts stay in Markdown.
-      const hasVisualGuide = await stat(path.join(folderPath, VISUAL_GUIDE_FILE)).then(() => true, () => false);
-      const guideSource = hasVisualGuide
-        ? sources.find(({ absolute, markdown }) => path.basename(absolute) !== 'overview.md' && markdown.includes(`](${VISUAL_GUIDE_FILE})`))
-        : undefined;
+      // A Markdown document carrying the visual-guide marker gets a portal "Visual guide" tab,
+      // built from its capability table, so the facts stay in Markdown.
+      const guideSource = sources.find(({ absolute, markdown }) =>
+        path.basename(absolute) !== 'overview.md' && markdown.includes(VISUAL_GUIDE_MARKER));
       if (guideSource) {
         docs.splice(1, 0, { title: 'Visual guide', path: pathForHandbook(guideSource.absolute), key: 'visual-guide', kind: 'visual' });
       }
@@ -244,11 +242,6 @@ export async function getMarkdownDocument(relativePath: string): Promise<string>
 
 export function portalHrefForMarkdown(fromPath: string, href: string): string {
   const [targetPath, hash] = href.split('#');
-  if (targetPath?.endsWith(`/${VISUAL_GUIDE_FILE}`) || targetPath === VISUAL_GUIDE_FILE) {
-    const absolute = path.resolve(handbookRoot, path.dirname(fromPath), targetPath);
-    const folder = path.relative(userPanelRoot, path.dirname(absolute)).split(path.sep).join('/');
-    if (folder && !folder.startsWith('..') && !folder.includes('/')) return moduleHref(moduleSlug(folder), 'visual-guide');
-  }
   if (!targetPath?.endsWith('.md')) return href;
   const absolute = path.resolve(handbookRoot, path.dirname(fromPath), targetPath);
   const relative = path.relative(docsRoot, absolute).split(path.sep).join('/');
@@ -310,6 +303,7 @@ function inferModules(source: string, consumers: string, endpoint: string): stri
   if (/reports|statement|betreport/.test(value)) modules.add('Reports and Statements');
   if (/scorecard|medias|rawscore/.test(value)) modules.add('Scorecard / Media');
   if (/casino/.test(value)) modules.add('Casino');
+  if (/accountapi|depositapi|withdrawapi|pages\/deposit|pages\/withdraw/.test(value)) modules.add('Deposit and Withdraw');
   return modules.size ? [...modules] : ['Shared User Panel'];
 }
 
@@ -433,6 +427,10 @@ function routeForModule(module: string): string | undefined {
   if (value.includes('home page')) return '/user-panel/home-page?doc=api-inventory';
   if (value.includes('in-play')) return '/user-panel/inplay?doc=api-inventory';
   if (value.includes('login and signup')) return '/user-panel/authentication?doc=api-inventory';
+  if (value.includes('casino')) return '/user-panel/casino?doc=api-inventory';
+  if (value.includes('reports')) return '/user-panel/reports?doc=api-inventory';
+  if (value.includes('scorecard')) return '/user-panel/scorecard-live-tv?doc=api-inventory';
+  if (value.includes('deposit and withdraw')) return '/user-panel/wallet?doc=api-inventory';
   return undefined;
 }
 
@@ -597,8 +595,7 @@ export async function getCapabilityMap(relativePath: string): Promise<Capability
   const intro = tree.children
     .slice(0, tableIndex)
     .filter((node) => node.type === 'paragraph')
-    .map(nodeText)
-    .find((text) => !text.includes(VISUAL_GUIDE_FILE)) ?? '';
+    .map(nodeText)[0] ?? '';
 
   const rows = (table.children ?? []).slice(1).map((row): CapabilityRow => {
     const cells = row.children ?? [];

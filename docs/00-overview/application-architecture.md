@@ -90,7 +90,7 @@ There is no `redux-persist`. Persistence is manual `localStorage` for auth only 
 
 ### 2.5 API layer quirks you must know
 - `src/apis/apiSlice.ts` is a **second, unused `createApi`**. Nothing imports it. The `src/apis/*Api.ts` files inject into `src/store/api/apiSlice.ts` like everything else.
-- 11 endpoint names are defined twice (auth endpoints, `getUserProfile`, `getUserWallets`, `getNotifications`). See [api-inventory.md](../../inventory/api-inventory.md#rsplay-duplicate-endpoint-definitions) and Q-01.
+- 11 endpoint names are defined twice (auth endpoints, `getUserProfile`, `getUserWallets`, `getNotifications`). See [api-inventory.md](../../inventory/api-inventory.md#rsplay-duplicate-endpoint-definitions) and Q-01 (resolved: only the definition in use is documented; `store/api/userApi.ts` and `store/api/notificationApi.ts` load first).
 
 ---
 
@@ -141,7 +141,7 @@ It has no service-worker registration in `main.tsx`; `vite-plugin-pwa` handles t
 | `media` | `mediaSlice` | `Media.tsx` dispatches `setMediaUrls` from `getMediaUrls` | Bet-slip open/close, `scorecardUrl`, `liveTvUrl` |
 | `casino` | `casinoSlice` | — | `launchGame(url)` / `closeGame()` |
 | `featureFlags`, `ui` | — | — | Flags, modals, sidebar, edit-stake |
-| `mfa` | `mfaApi.reducer` | — | **Same reducer as `api`** (`mfaApi` is injected into `apiSlice`). See Q-10 |
+| `mfa` | `mfaApi.reducer` | — | **Same reducer as `api`** (`mfaApi` is injected into `apiSlice`). Confirmed by the team as redundant; should be removed (Q-10) |
 
 `src/store/slices/sportSlice.ts` exists but is not imported anywhere (`OBSERVED`).
 

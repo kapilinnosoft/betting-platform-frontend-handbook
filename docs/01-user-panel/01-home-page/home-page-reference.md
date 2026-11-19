@@ -2,7 +2,9 @@
 
 This is the single Home Page entry point for the common module. It groups by capability rather than by frontend. Endpoint paths and rates below are source-observed; implementation-specific differences remain inline.
 
-The visual map is available at [visual-guide.html](visual-guide.html). Detailed component flow and full response mapping are in [component-flow.md](component-flow.md) and [api-inventory.md](api-inventory.md).
+<!-- portal:visual-guide -->
+
+The capability table below also drives the portal's Visual guide tab. Detailed component flow and full response mapping are in [component-flow.md](component-flow.md) and [api-inventory.md](api-inventory.md).
 
 | Home capability | API reference | How it is used |
 |---|---|---|

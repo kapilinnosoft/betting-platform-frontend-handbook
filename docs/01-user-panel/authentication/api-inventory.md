@@ -67,6 +67,36 @@ Content-Type: application/json
 
 The declared rsplay response is `{ success, data, message? }`; vishnu7 declares `{ accessToken, type }`. The vishnu7 UI uses that response to dispatch login and navigate to `/dashboard`; rsplay shows success and opens the login modal (`rsplay:src/store/api/authApi.ts:16-18 (registerUser)`, `vishnu7:src/store/api/authApi.ts:63-66 (RegisterResponse)`, `vishnu7:src/pages/auth/SignupPage.tsx:118-131 (onSubmit)`, `rsplay:src/pages/Auth/hooks/useRegister.ts:101-105 (handleSubmitForm)`).
 
+### Backend contract (team-provided, 2026-11-19, Q-21)
+
+The backend template accepts this body. The team says it is **flexible**: `firstname` and `lastname` may be sent or left out. Values are placeholders.
+
+```json
+{
+  "firstname": "<optional>",
+  "lastname": "<optional>",
+  "username": "exampleuser",
+  "email": "<EMAIL>",
+  "password": "<REDACTED>",
+  "dialCode": "<DIAL_CODE>",
+  "mobile": "<PHONE>",
+  "country": "<COUNTRY_CODE>",
+  "emailVerificationCode": "<CODE>",
+  "mobileVerificationCode": "<OTP_FROM_USER>",
+  "referralCode": "<OPTIONAL_CODE>"
+}
+```
+
+| Field | Contract | rsplay sends | vishnu7 sends |
+|---|---|---|---|
+| `firstname`, `lastname` | optional (team) | yes | no |
+| `username`, `password`, `dialCode`, `mobile`, `country`, `mobileVerificationCode` | yes | yes | yes |
+| `referralCode` | yes | when set | when non-empty |
+| `email`, `emailVerificationCode` | yes | no | no |
+| `code` | **not in the contract** | no | yes (same OTP as `mobileVerificationCode`) |
+
+So both frontend bodies fit the contract. Which contract fields are required, and whether the extra `code` is ignored or rejected by request validation, is `NOT CONFIRMED FROM SOURCE`; vishnu7 also sends `mobileVerificationCode`, so the OTP reaches the backend under the contract name either way.
+
 ## `POST /auth/login`
 
 Both UIs send `username`, `password`, and `device` (`rsplay:src/store/api/authApi.ts:38-58 (login)`, `rsplay:src/pages/Auth/hooks/useLogin.ts:32-42 (handleLogin)`, `vishnu7:src/store/api/authApi.ts:20-24,70-75 (LoginCredentials, login)`, `vishnu7:src/pages/auth/LoginPage.tsx:47-55 (onSubmit)`).

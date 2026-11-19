@@ -54,8 +54,7 @@ Result: a logged-in user on any page triggers at least one request every 2 s plu
 | In-play `/inplay`, `/sports/:sport[/:competitionId]` | `getEvents` | **2 s** | `useFixtureData.ts:55-57` | `/inplay` sends `inplay=true`; sport routes send `sport` and optional competition without `inplay` |
 | In-play `/inplay` | `getRaces` (inplay, two sports) | 10 s | `pages/Inplay/index.tsx:38-46` | Only when no `sportName` (i.e. `/inplay`); sends `inplay=true`, no `status` |
 | Game detail `/sports/:sport/market-details/:eventId` | `getCatalogueByEventId` `GET /catalogue/:eventId` | **1 s in-play / 2 s otherwise** | `pages/GameDetails/Hooks/useCatalogData.ts:23,32,112` | Interval held in state: starts at 1000, then `setPollingInterval(inplay ? 1000 : 2000)` |
-| Game detail | `getRawScorecard` `GET /events/raw-scorecard/:eventId` | 2 s | `pages/GameDetails/components/CricketScoreCard.tsx:22` | `!eventId` |
-| Game detail | `getLiveScorecard` (**same URL**) | **1 s** | `pages/GameDetails/components/CustomLiveScoreCard.tsx:37` | `!eventId \|\| !isAuthenticated`. Different endpoint name from `getRawScorecard`, so a separate cache entry. If both components mount, the URL is requested twice on separate timers (`INFERRED`; whether both mount is checked in Module 5) |
+| Game detail | `getLiveScorecard` `GET /events/raw-scorecard/:eventId` | **1 s** | `pages/GameDetails/components/CustomLiveScoreCard.tsx:37` | `!eventId \|\| !isAuthenticated`. Different endpoint name from `getRawScorecard`, so a separate cache entry. Cricket only, not for demo users; stops after a "no data" response. The desktop and mobile copies share one cache entry and one timer. See [Modules 5–7 polling](../docs/01-user-panel/05-scorecard-live-tv/polling-and-frequency.md) |
 | Game detail | `getScorecard` `GET events/scorecard/:eventId` | once (no polling) | `useCatalogData.ts:27` | `!eventId \|\| isDemoUser \|\| !isAuthenticated`. Returns `liveTvUrl` / `scorecardUrl` |
 | Racing list `/racing/:sportName[/:competitionId]` | `getRaces` | 10 s | `pages/Racing/index.tsx:38-44` | Sends `sportName` and optional `competitionId`; no `inplay` or `status`. See [Module 2](../docs/01-user-panel/02-inplay/polling-and-frequency.md#rsplay-810884b) |
 | Race detail `/details/:game/:eventId[/:gameId]` | `getRaceDetails` `GET /catalogue/:eventId?t=<now>` | **1 s** | `pages/RacingInside/index.tsx:26` | `!game \|\| !eventId`. The URL changes every call (`t=Date.now()`), which defeats any HTTP caching |
@@ -102,7 +101,23 @@ The same [Module 3 polling reference](../docs/01-user-panel/03-game-detail/polli
 - **`t: Date.now()` is a deliberate cache-buster** used on most APIs (Q-06).
 - Polling continues in hidden tabs. This is recorded as current behaviour only.
 
-Remaining frequency question: Q-04, whether two raw-scorecard timers can run at once. That will be answered from source in Module 5/7. See [open-questions.md](open-questions.md).
+Q-04 (two raw-scorecard timers) was resolved in Modules 5–7: only one runs. See [open-questions.md](open-questions.md).
+
+## Module 9: Deposit and Withdraw (rsplay)
+
+No deposit or withdraw API polls. Lists and history load on mount and on filter or page changes; mutations refresh them through the `Account` and `CryptoWithdrawWallet` tags. The withdrawable balance follows the layout's 5 s `GET /users/me/wallets` poll, and `FeatureRoute` subscribes to the 30 s `GET /system` poll. See [Module 9 polling](../docs/01-user-panel/09-wallet/polling-and-frequency.md).
+
+## Module 8: Casino (vishnu7)
+
+No casino API polls. The lobby fetches games on mount, on filter changes and on infinite scroll; categories per provider; providers once. Game sessions are created on click (locked ≥ 3 s), and the QTech lobby URL is fetched on mount. During gameplay, the layout `Header` stays mounted under the player overlay, so the 5 s `/users/me` and wallet polls continue. Details: [Module 8 polling and frequency](../docs/01-user-panel/08-casino/polling-and-frequency.md).
+
+## Modules 5–7: Scorecard, Live TV, Raw scorecard (rsplay)
+
+`GET events/scorecard/:eventId` (scorecard and Live TV URLs) runs once per game or race detail visit for logged-in, non-demo users. `GET /events/raw-scorecard/:eventId` polls every 1 s on cricket game detail pages for logged-in, non-demo users, from before the match until the user leaves, unless the API reports no data. Details: [Modules 5–7 polling and frequency](../docs/01-user-panel/05-scorecard-live-tv/polling-and-frequency.md).
+
+## Module 4: Reports (rsplay)
+
+No report API polls. Account statement, bet history and casino bet history make one request per argument set (mount, Go, Reset, search after 500 ms, page or size change; the account statement context filter applies immediately). Profit & loss makes two requests per visit (table + all-sports total). Exports are single POSTs on click. `placeBet` invalidates the `BetPlace` tag, so bet history and P&L entries refetch or are dropped after a bet. The always-on `HomeLayout` polls (2 s, 5 s, 30 s) continue on these pages. Details: [Module 4 polling and frequency](../docs/01-user-panel/04-reports/polling-and-frequency.md).
 
 ## Supplemental Login and Signup module
 

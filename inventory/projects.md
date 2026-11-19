@@ -11,7 +11,7 @@ Discovered on 2026-11-18 by inspecting `/home/innosoft/Projects`. The folder hol
 
 Why both: rsplay is the richest repo in its family (94 RTK Query endpoints, racing, wallet, scorecards). vishnu7 has features rsplay lacks: multi-market and pinned markets, a QTech lobby iframe, an open-bets summary, Telegram/mobile MFA, an activity log and an account-statement drill-down. It also has its own admin and result panels locally, which matters for Phases 2 and 3. See [feature-coverage.md](feature-coverage.md).
 
-Note: vishnu7's own `ARCHITECTURE.md` is titled "ONE8 Frontend — Architecture Reference" (`INFERRED`: copied from `one8-user`). Treat it as a hint and verify it against the code.
+Note: vishnu7's own `ARCHITECTURE.md` is titled "ONE8 Frontend — Architecture Reference" The team confirmed it was copied from another project (Q-11), so it is ignored; the handbook documents the code only.
 
 ## All User Panel repositories found
 

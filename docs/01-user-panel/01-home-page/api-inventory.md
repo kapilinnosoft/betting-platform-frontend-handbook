@@ -120,7 +120,33 @@ Not used on home: `heading`, `description`, `size`, `isPubliced` (rsplay does **
 
 → **`GET /fixture?status=ACTIVE`** (`OBSERVED` by tracing). The home page always requests every active fixture of every sport. Module 2 documents the other parameter combinations.
 
-**Response.** `useFixtureData` reads the following fields. The declared TS type `EventItem` (`eventsApi.ts:43-60`) **does not match**: it declares `runner?: Runner[]`, while the code reads `runners`, `marketId` and `isPremiumFancy` (Q-14).
+**Response.** `useFixtureData` reads the following fields. The declared TS type `EventItem` (`eventsApi.ts:43-60`) **does not match**: it declares `runner?: Runner[]`, while the code reads `runners`, `marketId` and `isPremiumFancy`. The team-provided response confirms the code, not the type (Q-14).
+
+Backend fixture item (team-provided, 2026-11-19, Q-14). The team removed keys not needed here; values are placeholders:
+
+```json
+{
+  "id": 32424,
+  "name": "<home> v <away>",
+  "externalId": "<provider event id>",
+  "sport": "Cricket",
+  "startTime": "<ISO date>",
+  "inplay": true,
+  "isFancy": false,
+  "isManual": false,
+  "isBookmaker": false,
+  "isPremiumFancy": false,
+  "competition": { "id": 549982, "name": "<competition>", "externalId": "<provider id>" },
+  "marketId": "<market id, string>",
+  "marketExternalId": "<provider market id>",
+  "runners": [
+    { "backPrice1": 1.19, "layPrice1": 1.2 },
+    { "backPrice1": 6, "layPrice1": 6.4 }
+  ]
+}
+```
+
+`externalId`, `isManual`, `marketExternalId`, `competition.id` and `competition.externalId` are not read by the frontend. The trimmed sample does not show `runnerName`, `backSize1` or `laySize1`, which the code also reads, so their presence is not confirmed by it (`NOT CONFIRMED FROM SOURCE`).
 
 ```text
 { success, message, fixture: [
@@ -284,4 +310,4 @@ Layout calls on both pages (Phase 4): `getUserInfo` and `getUserWallets` every 5
 | Fields used | `events[].id`, `.name`, `.sport` | `fixture[].id`, `.startTime` → `Map<String(id), startTime>` |
 | UI | `PopularEventCard` (name, sport, start time). Click → `/game-details/{sport}/{id}` | Only feeds the start time to the cards |
 
-`INFERRED`: if `/events/popular` returned `startTime` itself, the extra request for the whole `/fixture` list would be unnecessary. Q-19.
+**Team-confirmed improvement (Q-19, 2026-11-19):** `usePopularEvents` should fetch popular events only; the extra full `/fixture` request (V8) will be removed. Listed under [confirmed frontend fixes](../../../inventory/open-questions.md#confirmed-frontend-fixes).

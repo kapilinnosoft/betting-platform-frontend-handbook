@@ -2,7 +2,7 @@
 
 **Repos:** rsplay = `rsplay/rsplay-user@810884b` (primary) · vishnu7 = `vishnu7/vishnu7user@6f3b811` (secondary). Paths are relative to each repo's `src/`.
 
-**Common Home reference:** [Home Page API and feature map](home-page-reference.md) · [visual-guide.html](visual-guide.html). Detailed source evidence follows this common entry point.
+**Common Home reference:** [Home Page API and feature map](home-page-reference.md) (also shown as the portal's Visual guide tab). Detailed source evidence follows this common entry point.
 
 **Files in this module**
 
@@ -44,7 +44,7 @@ Imported but not rendered: `SportsTab` and `EventsTable` (`index.tsx:7,10`). `OB
 | `SportsListing` (guest) | One tab at a time: Cricket (default), Soccer, Tennis, Horse Racing, Greyhound | **3** | Fixtures with ≥1 market and **no** market named "forecast" |
 | `SportsListingLogin` (logged in) | Cricket, Soccer, Tennis, Greyhound, Horse Racing, all stacked | **5** | Fixtures with ≥1 market (forecast **not** excluded) |
 
-`OBSERVED`: `SportsListing.tsx:90-103`, `SportsListingLogin.tsx:40-74`. The forecast filter differs between the two (Q-16).
+`OBSERVED`: `SportsListing.tsx:90-103`, `SportsListingLogin.tsx:40-74`. The forecast filter differs between the two; the team confirmed this is platform-specific and not a defect (Q-16).
 
 Matches come from a single `/fixture?status=ACTIVE` request. The frontend splits it into cricket, soccer (shown as "football") and tennis. **Fixtures of any other sport in the response are dropped** (`useFixtureData.ts:101-119`). `OBSERVED`.
 
@@ -75,7 +75,7 @@ All `OBSERVED` from the component code.
 
 ### Notable implementation details
 - **Loader on tab switch:** `useFixtureData` shows the spinner on the first load and on user-triggered refetches (tab or sport change), but not on the 2 s background polls (`useFixtureData.ts:153-164`).
-- **When a row shows LIVE:** the badge is driven by the API's `inplay` flag. A `badges` list computed from the start time is never rendered, and the **TV icon is drawn on every row** regardless of stream availability (`InplayRow.tsx:92-99,165`). `OBSERVED`; tracked as Q-15.
+- **When a row shows LIVE:** the badge is driven by the API's `inplay` flag. A `badges` list computed from the start time is never rendered, and the **TV icon is drawn on every row** regardless of stream availability (`InplayRow.tsx:92-99,165`). `OBSERVED`. Team-confirmed defect: the icon should be conditional (Q-15).
 - **Odds hidden for outrights:** odds are hidden when `competitionName === eventName`, i.e. outright or league-level entries (`InplayRow.tsx:100`).
 - **Re-render guard:** rows are wrapped in `React.memo` with a deep compare on ids, tags, odds and runner prices, so 2 s polls only re-render rows whose prices changed (`InplayRow.tsx:207-219`).
 
@@ -110,7 +110,7 @@ vishnu7 has **two** home-like pages. `/` redirects to `/dashboard` (`App.tsx:58`
 | 5 | Side promotions (`HomePromotions`, `md` and up) | Static → `/casino?category=casino\|baccarat\|poker` |
 | 6 | "Popular Casino" (24) and "Casino Providers" (12) (`CasinoGames`) | `getHomeCasinoGames` + static `newProviderCards` |
 
-**Only cricket is ever listed.** `const [activeTab] = useState('Cricket')` has no setter (`pages/Home/index.tsx:14`). `OBSERVED`; Q-18.
+**Only cricket is ever listed.** `const [activeTab] = useState('Cricket')` has no setter (`pages/Home/index.tsx:14`). `OBSERVED`. Intended: a platform-specific requirement (team confirmation 2026-11-19, Q-18).
 
 ### Where clicks go (vishnu7)
 
@@ -133,7 +133,7 @@ vishnu7 has **two** home-like pages. `/` redirects to `/dashboard` (`App.tsx:58`
 | Match table | `NoMatchesFallback`: "No matches available" (`BettingTable.tsx:44-48`). No separate loading or error UI |
 | Welcome popup | Hidden unless every condition above holds. Closing it sets `hasSeenWelcomePopup = 'true'` |
 
-`Dashboard/index.tsx:157` logs to the console (`console.log('getGameImage', …)`) once per provider game on every render. `OBSERVED`.
+`Dashboard/index.tsx:157` logs to the console (`console.log('getGameImage', …)`) once per provider game on every render. `OBSERVED`. The team confirmed this and the placeholder fallback are leftovers and need no further tracking (Q-20).
 
 ---
 

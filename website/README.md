@@ -49,7 +49,7 @@ The privacy layer reads project labels from `inventory/projects.md` and replaces
 - **Heading anchors.** Every heading gets a GitHub-style id computed from its *original* text, so `[…](file.md#some-heading)` links written in the Markdown resolve in the portal. If that slug contains a private label, the id becomes a stable hash (`s-…`) and link fragments are converted the same way (`privateSafeHref`). Labels never appear in ids or hrefs.
 - **Redact before keys.** React `key` props are serialised into the page payload. Redact values *before* using them as keys or props in components.
 - **Inventory links.** Links to `inventory/*.md` route to `/api-frequency`, `/team-review`, `/api-explorer` (plain registry link), or `/inventory/<name>` (any other published inventory, and registry section links). `inventory/projects.md` is never published; links to unpublished files render as plain text.
-- **Visual guide.** A module folder that contains `visual-guide.html` gets a "Visual guide" tab. The tab is built from the Markdown document in that folder that links to `visual-guide.html`: its first table whose first header mentions "capability", plus the text after that table. To change the guide, edit that Markdown.
+- **Visual guide.** A module gets a "Visual guide" tab when one of its Markdown documents (not `overview.md`) contains the comment `<!-- portal:visual-guide -->`. The tab is built from that document: its first table whose first header mentions "capability", plus the text after that table. To change the guide, edit that Markdown.
 
 ### Checking the portal
 

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { BookOpen, ChartNoAxesColumn, FileCode2, GitBranch, Home, Menu, PanelsTopLeft, Search, ShieldCheck, X } from 'lucide-react';
+import { BookOpen, ChartNoAxesColumn, FileCode2, GitBranch, Home, Menu, PanelsTopLeft, Search, X } from 'lucide-react';
+// ShieldCheck
 import { cn } from '@/shared/lib/utils';
 import type { ModuleDocument } from '@/features/documentation/lib/content';
 
@@ -14,7 +15,7 @@ const links = [
   { href: '/api-explorer', label: 'API Explorer', icon: FileCode2 },
   { href: '/api-frequency', label: 'API Frequency', icon: ChartNoAxesColumn },
   { href: '/calculations', label: 'Calculations', icon: BookOpen },
-  { href: '/team-review', label: 'Team Review', icon: ShieldCheck },
+  // { href: '/team-review', label: 'Team Review', icon: ShieldCheck },
 ];
 
 export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
