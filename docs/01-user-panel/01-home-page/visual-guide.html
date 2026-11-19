@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f7f4" />
+    <title>Home Page Visual Guide</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17231f;
+        --muted: #64716c;
+        --paper: #f6f7f4;
+        --white: #ffffff;
+        --line: #dce2dc;
+        --green: #15765b;
+        --green-pale: #e4f2ec;
+        --coral: #d94d3f;
+        --coral-pale: #fff0ec;
+        --blue: #2764a5;
+        --blue-pale: #eaf1fa;
+        --gold: #d89c22;
+        --gold-pale: #fff5dc;
+        --radius: 8px;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+        line-height: 1.45;
+      }
+
+      button, a { font: inherit; }
+      a { color: var(--green); }
+      .page { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+      .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 52px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .masthead strong { color: var(--ink); font-size: 12px; font-weight: 800; }
+      .kicker { color: var(--green); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 {
+        max-width: 720px;
+        margin-bottom: 10px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 500;
+        line-height: 1.03;
+      }
+      .intro { padding: 38px 0 24px; }
+      .intro p { max-width: 670px; margin-bottom: 0; color: var(--muted); font-size: 15px; }
+
+      .selector-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 0 18px;
+        border-top: 1px solid var(--line);
+      }
+      .selector-label { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+      .selector {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #e9ede8;
+      }
+      .selector button {
+        min-height: 38px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: #43504a;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 750;
+      }
+      .selector button[aria-pressed="true"] { background: var(--ink); color: white; }
+      .selector button:focus-visible, a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+      .summary {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 14px 0 18px;
+      }
+      .summary h2 { margin: 3px 0 0; font-size: 23px; line-height: 1.1; }
+      .route {
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--white);
+        color: var(--muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 278px;
+        gap: 22px;
+        align-items: start;
+        padding-bottom: 36px;
+      }
+      .canvas {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: 0 10px 24px #17231f0a;
+      }
+      .canvas-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fbfcfa;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+      .signal { display: inline-flex; align-items: center; gap: 7px; }
+      .signal::before { width: 8px; height: 8px; border-radius: 50%; background: var(--green); content: ""; }
+      .bands { padding: 12px; }
+      .band {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: start;
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--line);
+        animation: arrive 240ms ease-out both;
+      }
+      .band:last-child { border-bottom: 0; }
+      .band:nth-child(2) { animation-delay: 35ms; }
+      .band:nth-child(3) { animation-delay: 70ms; }
+      .band:nth-child(4) { animation-delay: 105ms; }
+      .band:nth-child(5) { animation-delay: 140ms; }
+      .band:nth-child(6) { animation-delay: 175ms; }
+      .number {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--green-pale);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .band h3 { margin: 0 0 4px; font-size: 15px; }
+      .band p { max-width: 590px; margin: 0; color: var(--muted); font-size: 13px; }
+      .kind {
+        padding: 4px 7px;
+        border-radius: 4px;
+        background: var(--green-pale);
+        color: var(--green);
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .kind.sport { background: var(--coral-pale); color: var(--coral); }
+      .kind.casino { background: var(--blue-pale); color: var(--blue); }
+      .kind.static { background: var(--gold-pale); color: #87600e; }
+      .source {
+        display: block;
+        margin-top: 7px;
+        color: #75817b;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .aside { border-top: 3px solid var(--green); padding-top: 12px; }
+      .aside h3 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; }
+      .fact { padding: 11px 0; border-top: 1px solid var(--line); }
+      .fact-label { display: block; margin-bottom: 3px; color: var(--muted); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+      .fact-value { font-size: 13px; font-weight: 700; }
+      .detail-link { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 750; }
+      .footnote { margin: 0 0 36px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+
+      @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+      @media (max-width: 760px) {
+        .selector-wrap { align-items: flex-start; flex-direction: column; gap: 10px; }
+        .selector { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .selector button { padding: 0 6px; font-size: 12px; }
+        .layout { grid-template-columns: 1fr; gap: 20px; }
+        .aside { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+        .aside h3, .detail-link { grid-column: 1 / -1; }
+        .summary { align-items: flex-start; flex-direction: column; gap: 10px; }
+      }
+      @media (max-width: 420px) {
+        .page { width: min(100% - 20px, 1120px); }
+        .masthead span:last-child { display: none; }
+        .band { grid-template-columns: 30px minmax(0, 1fr); gap: 9px; padding-inline: 5px; }
+        .kind { grid-column: 2; justify-self: start; }
+        .band p { font-size: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <strong>FRONTEND HANDBOOK</strong>
+        <span>Home Page / source snapshot 2026-11</span>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <div class="kicker">Common Home Page module</div>
+          <h1 id="page-title">Home Page Visual Guide</h1>
+          <p>One shared view of the Home Page capabilities, with implementation-specific API differences kept inline. This is a source-based map, not a live application screenshot.</p>
+        </section>
+
+        <section class="summary" aria-live="polite">
+          <div>
+            <div class="kicker">USER PANEL / HOME</div>
+            <h2>One Home Page reference</h2>
+          </div>
+          <div class="route">/ &nbsp; /dashboard &nbsp; /home</div>
+        </section>
+
+        <section class="layout">
+          <div class="canvas" aria-label="Page structure map">
+            <div class="canvas-head">
+              <span class="signal">Page structure</span>
+              <span>Common capabilities and variants</span>
+            </div>
+            <div class="bands">
+              <article class="band">
+                <span class="number">01</span>
+                <div>
+                  <h3>Banner API</h3>
+                  <p>Both frontends use <code>GET /banners</code>. Placement values vary: HomeBanner / HomeBannerLogin / SecondaryBanner, and MainBanner / WellcomeBanner.</p>
+                  <small class="source">rsplay:src/store/api/contentApi.ts:6-13 (contentApi.getBanners); rsplay:src/pages/Home/components/MainBanner.tsx:23-37 (MainBanner); vishnu7:src/store/api/contentApi.ts:6-13 (contentApi.getBanners); vishnu7:src/pages/Dashboard/index.tsx:20-38 (Dashboard)</small>
+                </div>
+                <span class="kind">SHARED API</span>
+              </article>
+              <article class="band">
+                <span class="number">02</span>
+                <div>
+                  <h3>Popular matches and fixtures</h3>
+                  <p>One common Home capability, using the source's fixture APIs: active fixture rows refresh at 2 s; popular event cards use <code>/events/popular</code> plus fixture start times; the cricket table refreshes at 3 s.</p>
+                  <small class="source">rsplay:src/store/api/eventsApi.ts:298-315 (getEvents); rsplay:src/pages/Inplay/Hooks/useFixtureData.ts:55-57 (useFixtureData); vishnu7:src/store/api/sportsApi.ts:169-212 (getPopularEvents, getMatchesGroupedByCompetition); vishnu7:src/hooks/usePopularEvents.ts:4-12 (usePopularEvents); vishnu7:src/hooks/useGroupedFixtures.ts:20-30 (useGroupedFixtures)</small>
+                </div>
+                <span class="kind sport">FIXTURES</span>
+              </article>
+              <article class="band">
+                <span class="number">03</span>
+                <div>
+                  <h3>Fixture counts</h3>
+                  <p><code>GET /fixture/counts</code> feeds the Home header every 2 s in rsplay. The vishnu7 Header instead queries user info and wallets; no fixture-count query is mounted there.</p>
+                  <small class="source">rsplay:src/store/api/eventsApi.ts:291-297 (getFixtureCounts); rsplay:src/components/Header.tsx:67-69 (Header); vishnu7:src/components/Header.tsx:46-48 (Header, no count query)</small>
+                </div>
+                <span class="kind static">RSPLAY ONLY</span>
+              </article>
+              <article class="band">
+                <span class="number">04</span>
+                <div>
+                  <h3>Casino games and promotions</h3>
+                  <p>Home casino content is present across the implementations, with different endpoints and layouts: a card-game list, home games, provider games, and static promotions.</p>
+                  <small class="source">rsplay:src/pages/Home/components/PopularGames.tsx:32-37 (PopularGames); vishnu7:src/pages/Dashboard/index.tsx:22-23 (Dashboard); vishnu7:src/pages/Home/components/CasinoGames.tsx:14-45 (CasinoGames); vishnu7:src/pages/Home/components/HomePromotions.tsx:24-50 (HomePromotions)</small>
+                </div>
+                <span class="kind casino">CASINO</span>
+              </article>
+              <article class="band">
+                <span class="number">05</span>
+                <div>
+                  <h3>Home variants</h3>
+                  <p>Guest and logged-in presentation can differ; routes include the general Home, casino-first Dashboard, and sports-first Home. Details stay in the same Home module.</p>
+                  <small class="source">rsplay:src/pages/Home/index.tsx:57-69 (Home); vishnu7:src/App.tsx:54-62 (App routes); vishnu7:src/pages/Home/index.tsx:13-20 (Home)</small>
+                </div>
+                <span class="kind">PAGE</span>
+              </article>
+            </div>
+          </div>
+
+          <aside class="aside" aria-label="Selected page facts">
+            <h3>At a glance</h3>
+            <div class="fact">
+              <span class="fact-label">Page type</span>
+              <span class="fact-value">Shared Home module; route-specific views</span>
+            </div>
+            <div class="fact">
+              <span class="fact-label">Common API</span>
+              <span class="fact-value">Banners: GET /banners</span>
+              <small class="source">Both frontend snapshots</small>
+            </div>
+            <div class="fact">
+              <span class="fact-label">Home refreshes</span>
+              <span class="fact-value">Fixtures 2 s / 3 s; counts 2 s where implemented</span>
+              <small class="source">Different endpoint parameters and rates are noted in the API reference.</small>
+            </div>
+            <a class="detail-link" href="overview.md">Open the detailed Home Page documentation &rarr;</a>
+          </aside>
+        </section>
+
+        <p class="footnote">The capability map is unified; endpoint names, request bodies, rates, and UI variants are not assumed identical. Full source-backed detail is in the Home Page API inventory.</p>
+      </main>
+    </div>
+
+  </body>
+</html>

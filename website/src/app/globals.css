@@ -1,0 +1,33 @@
+/*
+  globals.css
+  Imported once, in the ROOT layout only (src/app/layout.tsx).
+  Never import this again in a nested layout/page — Tailwind's base styles
+  should only be injected once per app.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 255 255 255;
+  --foreground: 15 23 42;
+}
+
+html { scroll-behavior: smooth; }
+* { letter-spacing: 0; }
+
+body {
+  min-height: 100vh;
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
+}
+
+::selection { background: #99f6e4; color: #042f2e; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
