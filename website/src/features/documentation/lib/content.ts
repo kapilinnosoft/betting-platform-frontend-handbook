@@ -176,7 +176,8 @@ async function progressStatus(folder: string): Promise<string> {
   const expectedPath = `01-user-panel/${folder}/overview.md`;
   const row = progress.split('\n').find((line) => line.includes(expectedPath));
   if (!row) return 'Documentation status not listed';
-  const status = row.split('|').at(-1)?.trim() ?? '';
+  const cells = row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
+  const status = cells.at(-1)?.trim() ?? '';
   return status || 'Status not confirmed from progress inventory';
 }
 

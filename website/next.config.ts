@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -8,6 +9,14 @@ import type { NextConfig } from 'next';
 // and you don't need to configure it unless you want non-default behavior.
 // ─────────────────────────────────────────────────────────────────────────
 const nextConfig: NextConfig = {
+  // The handbook Markdown lives one level above this app (../docs, ../inventory,
+  // ../README.md) and is read at request time. Trace from the repository root and
+  // ship those files with the server functions so they exist after deployment.
+  outputFileTracingRoot: path.join(__dirname, '..'),
+  outputFileTracingIncludes: {
+    '/**': ['../docs/**/*', '../inventory/**/*', '../README.md'],
+  },
+
   // Speeds up cold starts / rebuilds by caching Turbopack's work on disk
   // between `next dev` runs. Safe to enable; delete `.next/cache` if you
   // ever see stale-build weirdness.
