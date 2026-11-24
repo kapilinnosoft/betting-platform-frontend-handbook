@@ -4,7 +4,8 @@ import { Sidebar } from '@/shared/components/common/sidebar';
 import { Navbar } from '@/shared/components/common/navbar';
 
 export default async function PortalLayout({ children }: { children: ReactNode }) {
-  const modules = await getDocumentedModules();
+  const [userModules, adminModules] = await Promise.all([getDocumentedModules('user'), getDocumentedModules('admin')]);
+  const modules = [...userModules, ...adminModules];
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 lg:flex">
       <Sidebar modules={modules} />

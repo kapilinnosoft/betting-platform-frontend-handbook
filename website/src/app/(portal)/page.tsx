@@ -8,6 +8,8 @@ export default async function OverviewPage() {
   const [stats, modules, questions, recent, labels] = await Promise.all([
     getDashboardStats(), getDocumentedModules(), getOpenQuestions(), getRecentDocumentation(5), getPrivateLabels(),
   ]);
+  const adminModules = await getDocumentedModules('admin');
+  const adminCompleted = adminModules.filter((module) => /DOCUMENTATION COMPLETE/i.test(module.status));
   const coreModules = modules.filter((module) => module.group === 'User Panel');
   const completed = coreModules.filter((module) => /DOCUMENTATION COMPLETE/i.test(module.status));
   const pendingQuestions = questions.filter((question) => !/resolved/i.test(question.status));
@@ -28,7 +30,9 @@ export default async function OverviewPage() {
       <SectionHeading title="Platform panels" />
       <div className="grid gap-0 border-y border-slate-200 md:grid-cols-3 dark:border-slate-800">
         <Panel title="User Panel" status={`${completed.length} documented modules`} detail={`${[...completed, ...modules.filter((module) => module.group === 'Supplemental')].map((module) => module.displayTitle).join(', ')} have module-level documentation; remaining areas are shown only when supported by existing documentation.`} href="/user-panel" />
-        <Panel title="Admin Panel" status="Not documented" detail="Architecture and module content are not available in the current handbook." />
+        {adminModules.length > 0
+          ? <Panel title="Admin Panel" status={`${adminCompleted.length} documented modules`} detail={`${adminModules.map((module) => module.displayTitle).join(', ')} have module-level documentation (Phase 2, in progress).`} href="/admin-panel" />
+          : <Panel title="Admin Panel" status="Not documented" detail="Architecture and module content are not available in the current handbook." />}
         <Panel title="Result Panel" status="Not documented" detail="Architecture and module content are not available in the current handbook." />
       </div>
 

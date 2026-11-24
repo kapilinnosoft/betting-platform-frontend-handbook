@@ -9,6 +9,7 @@ This repository holds the canonical Markdown handbook plus its Next.js documenta
 ## Source repositories
 - Primary: `/home/innosoft/Projects/rsplay/rsplay-user` at commit `810884b`.
 - Secondary: `/home/innosoft/Projects/vishnu7/vishnu7user` at commit `6f3b811`.
+- Admin Panel (Phase 2): `/home/innosoft/Projects/rsplay/rsplay-admin` at commit `12f0054` (branch `staging`). Approved so far: Login/layout with sidebar, Dashboard, Downline.
 - Read the **last commit** only. In vishnu7, read files with `git show HEAD:<path>` because its working tree has uncommitted edits (`src/App.tsx`, `src/routes/index.tsx`, `src/hooks/index.ts` and new favicon files).
 - If either repo's HEAD moves, re-check affected docs and update the commit in `README.md`.
 

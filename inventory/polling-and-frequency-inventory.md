@@ -122,3 +122,16 @@ No report API polls. Account statement, bet history and casino bet history make 
 ## Supplemental Login and Signup module
 
 Signup OTP, registration, and login are user-triggered POST mutations; none is configured with `pollingInterval` (`rsplay:src/pages/Auth/hooks/useRegister.ts:65-99 (useRegister)`, `rsplay:src/pages/Auth/hooks/useLogin.ts:32-42 (useLoginPage)`, `vishnu7:src/pages/auth/SignupPage.tsx:87-128 (SignupPage)`, `vishnu7:src/pages/auth/LoginPage.tsx:47-55 (LoginPage)`). See the [API inventory](../docs/01-user-panel/authentication/api-inventory.md).
+
+## Admin Panel (Phase 2): rsplay-admin `12f0054`, Modules A1-A3
+
+Global facts for the admin app: RTK Query `^1.9.7`, `pollingInterval` only (no WebSocket in these modules); `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0` on the whole `apiSlice`, so every mount refetches (`store/api/apiSlice.ts:40-41`); most queries add `ts: Date.now()` (design intent, as Q-06); a 401 signs the user out after 2 s with no refresh call.
+
+| Request | Repeats | Where | Reason (from code) | Detail |
+|---|---|---|---|---|
+| `GET /push-notification/unread` | 10 s | layout, every page after sign-in | new deposit/withdraw notification badge, sound and banner | [A1 polling](../docs/02-admin-panel/01-login-and-layout/polling-and-frequency.md) |
+| `GET /users/me` | 20 s | layout | role, `passwordChanged`, status (inactive or suspended accounts are signed out) | same |
+| `GET /users/me/wallets` | 20 s | layout | header balance | same |
+| `GET /dashboard/live-games` | 60 s | Dashboard | live-event odds and platform position | [A2 polling](../docs/02-admin-panel/02-dashboard/polling-and-frequency.md) |
+
+Downline (A3) has no polling; see [A3 polling](../docs/02-admin-panel/03-downline/polling-and-frequency.md). The Dashboard header clock uses a 1 s `setInterval` that makes no API call (`components/common/Header.tsx:65-71`).

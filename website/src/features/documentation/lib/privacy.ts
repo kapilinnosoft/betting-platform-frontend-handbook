@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
@@ -48,17 +48,21 @@ function plainBrandValues(value: string): string[] {
     .filter((part) => part.length > 1 && part.length < 36 && !ignoredLabels.has(part.toLowerCase()) && /^[A-Za-z][A-Za-z0-9._-]*$/.test(part));
 }
 
-let labelsPromise: Promise<PrivateLabel[]> | undefined;
+const projectsInventory = path.join(handbookRoot, 'inventory/projects.md');
+let labelsCache: { mtime: number; labels: Promise<PrivateLabel[]> } | undefined;
 
-export function getPrivateLabels(): Promise<PrivateLabel[]> {
-  if (!labelsPromise) labelsPromise = loadPrivateLabels();
-  return labelsPromise;
+/** Labels are rebuilt whenever inventory/projects.md changes, so new repositories are redacted without a restart. */
+export async function getPrivateLabels(): Promise<PrivateLabel[]> {
+  const mtime = (await stat(projectsInventory)).mtimeMs;
+  if (!labelsCache || labelsCache.mtime !== mtime) labelsCache = { mtime, labels: loadPrivateLabels() };
+  return labelsCache.labels;
 }
 
 async function loadPrivateLabels(): Promise<PrivateLabel[]> {
-  const source = await readFile(path.join(handbookRoot, 'inventory/projects.md'), 'utf8');
+  const source = await readFile(projectsInventory, 'utf8');
   const tree = remark().use(remarkGfm).parse(source) as unknown as MarkdownNode;
   const selected: string[][] = [];
+  const selectedAdmin: string[][] = [];
   const all = new Set<string>();
   let section = '';
 
@@ -93,6 +97,9 @@ async function loadPrivateLabels(): Promise<PrivateLabel[]> {
           // so "brand" and "brand-user" redact to the same implementation label.
           selected.push(pathParts);
         }
+        if (section.includes('selected reference') && section.includes('admin') && headers[index] === 'repo' && pathParts.length) {
+          selectedAdmin.push(pathParts);
+        }
       }
     }
   }
@@ -102,6 +109,11 @@ async function loadPrivateLabels(): Promise<PrivateLabel[]> {
     const replacement = position === 0 ? 'Implementation A' : 'Implementation B';
     for (const part of parts) variants.set(part.toLowerCase(), replacement);
   });
+  // The admin reference repo gets its own neutral label; a brand folder shared with a
+  // User Panel reference keeps that reference's label.
+  for (const parts of selectedAdmin) {
+    for (const part of parts) if (!variants.has(part.toLowerCase())) variants.set(part.toLowerCase(), 'Admin reference');
+  }
   const output = [...all].map((value) => ({
     value,
     replacement: variants.get(value.toLowerCase()) ?? 'another implementation',

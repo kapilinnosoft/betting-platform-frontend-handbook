@@ -476,3 +476,42 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 | `getContactSupport` (L82) | query | GET | `/contact-support` | P:['Support'] | `components/Header.tsx`<br>`components/modals/LoginModal.tsx`<br>`layouts/AuthLayout.tsx`<br>`pages/auth/LoginPage.tsx` | onQueryStarted |
 | `getStakeDetails` (L101) | query | GET | `/user/get-usermeta-details` | — | — | Defined but not called (`NOT FOUND` in consumers); onQueryStarted |
 | `updateStakeDetails` (L116) | mutation | PUT | `/user/update-chipssetting` | — | — | Defined but not called (`NOT FOUND` in consumers); onQueryStarted |
+
+---
+
+## Admin Panel (Phase 2): rsplay-admin `12f0054`
+
+Scope: Modules A1-A3 only (Login and layout, Dashboard, Downline), approved 2026-11-24. This is **not** a full registry of rsplay-admin endpoints. Other admin modules will be added when approved. Full request, response and UI detail is in each module's API inventory, linked below. The admin app has one `apiSlice` with `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0`, and it signs the user out on 401 with no refresh call ([phase overview](../docs/02-admin-panel/overview.md#how-the-admin-app-talks-to-the-backend)).
+
+These tables use the column names "Name" and "Request" on purpose. The portal's API Explorer currently builds User Panel records from tables headed Endpoint / Method / URL, and admin rows must not merge into them.
+
+| Name | Request | Documented in | Notes |
+|---|---|---|---|
+| `login` | `POST /auth/login` | [A1 L1](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l1-login) | Same path as the User Panel login; admin body is `{ username, password }` only |
+| `setupMfa`, `confirmMfaSetup`, `verifyMfa`, `getMfaStatus` | `POST /mfa/setup`, `POST /mfa/setup/confirm`, `POST /auth/mfa/verify`, `GET /mfa/status` | [A1 L2-L5](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l2-setupmfa) | Google Authenticator only; Telegram commented out |
+| `getUser` | `GET /users/me` | [A1 L6](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l6-getuser) | polled every 20 s by the layout |
+| `availbleRoles` | `GET /role/available` | [A1 L7](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l7-availbleroles) | role ids for links |
+| `changePassword`, `OwnerChangePassword` | `POST /users/me/change-password`, `POST /admin/change-password` | [A1 L8](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l8-changepassword--ownerchangepassword) | |
+| `logout` | `POST /auth/logout` | [A1 L9](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l9-logout) | |
+| `getWallet` | `GET /users/me/wallets` | [A1 L10](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l10-getwallet) | polled every 20 s by the layout |
+| `getLoginAsToken`, `verifyLoginToken` | `GET /auth/gettoken/{userId}`, `GET /auth/verify-token/{code}` | [A1 L11-L12](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l11-getloginastoken) | Owner "Login as" hand-off to the agent panel |
+| `getUserRolesDetails` | `GET /privileges/subadmin/detail` | [A1 L13](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l13-getuserrolesdetails) | role-user permissions |
+| `getUnreadNotifications`, `getNotifications`, `markAllRead` | `GET /push-notification/unread`, `GET /push-notification`, `POST /push-notification/read` | [A1 L14-L16](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l14-getunreadnotifications) | unread polled every 10 s |
+| `getIsMasterOwner` | `GET /users/is/master-owner/user` | [A1 L17](../docs/02-admin-panel/01-login-and-layout/api-inventory.md#l17-getismasterowner) | sidebar and Dashboard |
+| `getBalanceSummary` … `getBonusAnalytics` (11 queries) | `GET /dashboard/{balance-summary, user-management, game-analytics, casino-analytics, business-analytics, top-users, top-pl-users, top-categories, device-breakdown, bonus-analytics, login-summary}` | [A2 D1-D12](../docs/02-admin-panel/02-dashboard/api-inventory.md) | no `ts`; each has its own tag |
+| `getLiveGames` | `GET /dashboard/live-games` | [A2 D2](../docs/02-admin-panel/02-dashboard/api-inventory.md#d2-getlivegames) | polled every 60 s |
+| `getSystemSettings` | `GET /system` | [A2 D14](../docs/02-admin-panel/02-dashboard/api-inventory.md#d14-getsystemsettings) | reads `masteranalytics.selection` |
+| `getMembers` | `GET users/me/sub-users` | [A3 DL1](../docs/02-admin-panel/03-downline/api-inventory.md#dl1-getmembers) | level lists and Settlement |
+| `getSummary` | `GET /users/summary` | [A3 DL2](../docs/02-admin-panel/03-downline/api-inventory.md#dl2-getsummary) | balance strip |
+| `getSubMembers` | `GET /users/sub-users/{id}` | [A3 DL3](../docs/02-admin-panel/03-downline/api-inventory.md#dl3-getsubmembers) | drill-down |
+| `addMember` | `POST /users/sub-user` | [A3 DL4](../docs/02-admin-panel/03-downline/api-inventory.md#dl4-addmember) | partnership rule |
+| `deposit`, `withdraw` | `POST users/{id}/wallets/deposit`, `POST users/{id}/wallets/withdraw` | [A3 DL5/DL6](../docs/02-admin-panel/03-downline/api-inventory.md#dl5-deposit--dl6-withdraw) | |
+| `depositCoin`, `withdrawCoin` | `POST /coin/deposit/{id}`, `POST /coin/withdraw/{id}` | [A3 DL7/DL8](../docs/02-admin-panel/03-downline/api-inventory.md#dl7-depositcoin--dl8-withdrawcoin) | |
+| `getSportPermission`, `updateSportPermission` | `GET` / `PUT /sports-permission/{id}` | [A3 DL9/DL10](../docs/02-admin-panel/03-downline/api-inventory.md#dl9-getsportpermission--dl10-updatesportpermission) | |
+| `changeStatus`, `changeUserAccess` | `PATCH /users/change-status/{id}`, `PATCH /users/change/{id}` | [A3 DL11/DL12](../docs/02-admin-panel/03-downline/api-inventory.md#dl11-changestatus) | |
+| `getAccountSummary`, `membersChangePassword` | `GET /users/account/summary/{id}/{path}`, `PATCH /admin/users/password/{id}` | [A3 DL14/DL15](../docs/02-admin-panel/03-downline/api-inventory.md#dl14-getaccountsummary) | |
+| account-details reports | `GET users/transactions/deposit-withdraw/{id}`, `/users/transactions/all`, `/reports/bet`, `reports/casino-bet`, `/reports/event/profitloss`, `reports/market/profitloss/{eventId}/{id}`, `activity-log/{id}`, `/competitions`, `/events` | [A3 DL16-DL24](../docs/02-admin-panel/03-downline/api-inventory.md#dl16-gettransactionhistory) | |
+| `settlement` | `POST /users/{id}/wallets/settlement` | [A3 DL25](../docs/02-admin-panel/03-downline/api-inventory.md#dl25-settlement) | |
+| exports | six `POST` export endpoints | [A3 DL26](../docs/02-admin-panel/03-downline/api-inventory.md#dl26-exports-from-account-details) | |
+
+Defined but not reachable from A1-A3 at this commit: `getCaptcha`, `addCreditRefrence`, `getOwnerMfaStatus`, `disableOwnerMfa`, `roleUserChangePassword`, `getCasinoDetail`, `updateTransactionCode` ([A3 list](../docs/02-admin-panel/03-downline/api-inventory.md#defined-for-downline-but-not-reachable)).

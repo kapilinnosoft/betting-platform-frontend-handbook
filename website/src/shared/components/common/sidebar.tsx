@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { BookOpen, ChartNoAxesColumn, FileCode2, GitBranch, Home, Menu, PanelsTopLeft, Search, X } from 'lucide-react';
+import { BookOpen, ChartNoAxesColumn, FileCode2, GitBranch, Home, Menu, PanelsTopLeft, Search, ShieldUser, X } from 'lucide-react';
 // ShieldCheck
 import { cn } from '@/shared/lib/utils';
 import type { ModuleDocument } from '@/features/documentation/lib/content';
+
+const moduleHref = (module: ModuleDocument) => `/${module.panel === 'admin' ? 'admin-panel' : 'user-panel'}/${module.slug}`;
 
 const links = [
   { href: '/', label: 'Overview', icon: Home },
   { href: '/architecture', label: 'Architecture', icon: GitBranch },
   { href: '/user-panel', label: 'User Panel', icon: PanelsTopLeft },
+  { href: '/admin-panel', label: 'Admin Panel', icon: ShieldUser },
   { href: '/api-explorer', label: 'API Explorer', icon: FileCode2 },
   { href: '/api-frequency', label: 'API Frequency', icon: ChartNoAxesColumn },
   { href: '/calculations', label: 'Calculations', icon: BookOpen },
@@ -30,6 +33,7 @@ export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
   );
   const visibleModules = matching.filter((module) => module.group === 'User Panel');
   const visibleSupplemental = matching.filter((module) => module.group === 'Supplemental');
+  const visibleAdmin = matching.filter((module) => module.group === 'Admin Panel');
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   const linkClass = (href: string) => cn(
@@ -57,18 +61,22 @@ export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
         </label>
         <nav className="mt-4 space-y-1" aria-label="Documentation">
           {visibleLinks.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={linkClass(href)} onClick={() => setMobileOpen(false)}><Icon className="size-4 shrink-0" aria-hidden="true" /><span>{label}</span></Link>)}
-          <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Documented modules</div>
+          <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">User Panel modules</div>
           {visibleModules.map((module) => {
-            const href = `/user-panel/${module.slug}`;
+            const href = moduleHref(module);
             return <Link key={module.folder} href={href} aria-current={isActive(href) ? 'page' : undefined} className={linkClass(href)} onClick={() => setMobileOpen(false)}>{module.displayTitle}</Link>;
           })}
           {visibleSupplemental.length > 0 && <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Supplemental references</div>}
           {visibleSupplemental.map((module) => {
-            const href = `/user-panel/${module.slug}`;
+            const href = moduleHref(module);
+            return <Link key={module.folder} href={href} aria-current={isActive(href) ? 'page' : undefined} className={linkClass(href)} onClick={() => setMobileOpen(false)}>{module.displayTitle}</Link>;
+          })}
+          {visibleAdmin.length > 0 && <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Admin Panel modules</div>}
+          {visibleAdmin.map((module) => {
+            const href = moduleHref(module);
             return <Link key={module.folder} href={href} aria-current={isActive(href) ? 'page' : undefined} className={linkClass(href)} onClick={() => setMobileOpen(false)}>{module.displayTitle}</Link>;
           })}
           <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Panels</div>
-          <span className="flex min-h-9 items-center px-2.5 text-[13px] text-slate-400" aria-disabled="true">Admin Panel <span className="ml-auto text-[10px]">Undocumented</span></span>
           <span className="flex min-h-9 items-center px-2.5 text-[13px] text-slate-400" aria-disabled="true">Result Panel <span className="ml-auto text-[10px]">Undocumented</span></span>
         </nav>
         <div className="mt-auto border-t border-slate-200 pt-4 text-[11px] leading-5 text-slate-400 dark:border-slate-800">Source-backed internal reference</div>

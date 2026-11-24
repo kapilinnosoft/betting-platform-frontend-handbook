@@ -13,6 +13,12 @@ Why both: rsplay is the richest repo in its family (94 RTK Query endpoints, raci
 
 Note: vishnu7's own `ARCHITECTURE.md` is titled "ONE8 Frontend — Architecture Reference" The team confirmed it was copied from another project (Q-11), so it is ignored; the handbook documents the code only.
 
+## Selected reference (Phase 2: Admin Panel)
+
+| Role | Repo | Branch | Commit | Notes |
+|---|---|---|---|---|
+| Admin reference | `rsplay/rsplay-admin` | `staging` | `12f0054` (2026-11-20) | Chosen by the team on 2026-11-24. One build serves the admin panel (Owner, staff role users) and the agent panel (`VITE_ADMIN_URL` / `VITE_AGENT_URL`). Working tree clean at reading |
+
 ## All User Panel repositories found
 
 All except AJ are Vite + React SPAs built from the same `admin-template` base: Redux Toolkit, a single RTK Query `apiSlice`, and routes declared in `App.tsx`.
@@ -35,7 +41,8 @@ All except AJ are Vite + React SPAs built from the same `admin-template` base: R
 | leaser | `leaser/laser247-admin` | `leaser/laser247-result-panel` |
 | AJ | `AJ/adminpanelfe` | `AJ/result-web` |
 | ninewicket | `ninewicket/Nineaaa-admin` | `ninewicket/ninewickets-result-panel` (also a copy in `velki/`) |
-| rsplay, notout, one8, betx777, kailashbook, pb, shyamexch, win2rich, Diamond | admin only | — |
+| betx777 | `betx777/betex777-admin` | — |
+| rsplay, notout, one8, kailashbook, pb, shyamexch, win2rich, Diamond | admin only | — |
 
 ## Not frontend repositories
 - `backend /` – `igaming-nestjs-template`, `nestjs-starter-template` (NestJS). These may help with `BACKEND CONFIRMATION REQUIRED` items later. Not inspected yet.

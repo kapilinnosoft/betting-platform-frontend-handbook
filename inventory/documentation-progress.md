@@ -8,7 +8,7 @@ Status values: NOT STARTED · IN PROGRESS · SOURCE ANALYSIS COMPLETE · DOCUMEN
 |---|---|---|---|
 | 1 | Repository discovery | DOCUMENTATION COMPLETE ([projects.md](projects.md)) | 2026-11-18 |
 | 2 | User Panel architecture discovery (rsplay + vishnu7) | DOCUMENTATION COMPLETE | 2026-11-18 |
-| 3 | Module-by-module analysis | IN PROGRESS: Modules 1-9 and supplemental Login/Signup documented; Module 9 awaiting approval | 2026-11-19 |
+| 3 | Module-by-module analysis | IN PROGRESS: Phase 1 Modules 1-9 and supplemental Login/Signup documented. Phase 2 (Admin Panel) Modules A1-A3 documented 2026-11-24 and shown in the portal under `/admin-panel` (approved 2026-11-24); awaiting approval of the next admin module | 2026-11-24 |
 
 ## Phase 1: User Panel modules
 
@@ -26,6 +26,16 @@ Repos: rsplay = `rsplay/rsplay-user@810884b` (primary), vishnu7 = `vishnu7/vishn
 | 8 | [Casino gameplay](../docs/01-user-panel/08-casino/overview.md) (lobby, entry points from other pages, launch and redirects, how games open, exit) | **vishnu7 only** (team decision 2026-11-19) | Yes: lobby hook and page, launcher, consent gate, playground and player, QTech lobby, every entry point in navigation and pages | Yes: 5 canonical casino APIs, home casino APIs linked to Module 1, unused endpoints listed | No calculations; filter, paging and launch logic documented | Yes: no polling; every trigger listed | DOCUMENTATION COMPLETE (response shapes from types and code, not captured responses) |
 | 9 | [Deposit and Withdraw](../docs/01-user-panel/09-wallet/overview.md) (UPI, bank and crypto deposit; bank/UPI/crypto withdraw; saved accounts; request history) | **rsplay only** (team decision 2026-11-19) | Yes: both pages, `FeatureRoute`, every form, account cards, history tables, wallet slice, rule texts | Yes: 16 APIs (W1–W16) plus `/system` linked to Module 1; 10 unused duplicates listed | Withdrawable balance, USDT→INR conversion, deposit range checks, validation rules | Yes: no polling; 5 s wallet and 30 s `/system` layout polls; tag refresh table | DOCUMENTATION COMPLETE (response shapes from types and code, not captured responses) |
 
+## Phase 2: Admin Panel modules
+
+Repo: `rsplay/rsplay-admin@12f0054` (2026-11-20, branch `staging`; clean working tree). Scope approved 2026-11-24: Login and layout (with sidebar), Dashboard, Downline.
+
+| # | Module | Repository | Source inspected | APIs documented | Calculations documented | Frequency documented | Status |
+|---|---|---|---|---|---|---|---|
+| A1 | [Login and layout shell](../docs/02-admin-panel/01-login-and-layout/overview.md) + [sidebar](../docs/02-admin-panel/01-login-and-layout/sidebar.md) | rsplay-admin | Yes: routes and guards, login, MFA, Login-As hand-off, auth slice, 401 handling, layout header, notifications, forced password change, both sidebar menus | Yes: 17 APIs (L1-L17) | No calculations; role and permission rules documented | Yes: 10 s / 20 s / 20 s layout polls | DOCUMENTATION COMPLETE (response shapes from types and code, not captured responses) |
+| A2 | [Dashboard](../docs/02-admin-panel/02-dashboard/overview.md) | rsplay-admin | Yes: page, every card, Live Events, charts, date filter helper, visibility rules | Yes: 14 APIs (D1-D14) | Device percentage, live-event platform position (sign flip), odds order; balance figures are backend values | Yes: Live Events 60 s; everything else on open, filter or Refresh | DOCUMENTATION COMPLETE |
+| A3 | [Downline](../docs/02-admin-panel/03-downline/overview.md) | rsplay-admin | Yes: level list, drill-down, create member, every row modal, account-details tabs, settlement | Yes: 26 groups (DL1-DL26) plus unreachable definitions; team-supplied API list cross-checked | Partnership rule, D/W updated balance, withdraw cap, settlement amounts, Account Summary wallet figures | Yes: no polling; triggers and tag refreshes listed | DOCUMENTATION COMPLETE |
+
 ## Supplemental module
 
 | Module | Repository | Source/API coverage | Status |
@@ -38,9 +48,9 @@ Repos: rsplay = `rsplay/rsplay-user@810884b` (primary), vishnu7 = `vishnu7/vishn
 |---|---|
 | [projects.md](projects.md) | Complete |
 | [page-inventory.md](page-inventory.md) | Complete for both repos (routes) |
-| [api-inventory.md](api-inventory.md) | Complete endpoint registry and consumers; Modules 1-9 and supplemental auth detail linked |
-| [polling-and-frequency-inventory.md](polling-and-frequency-inventory.md) | Complete for `pollingInterval` usage; Modules 1-3 per-page reasoning linked; auth mutations noted as non-polling |
+| [api-inventory.md](api-inventory.md) | Complete User Panel endpoint registry and consumers; Modules 1-9 and supplemental auth detail linked. Admin Panel: in-scope endpoints (A1-A3) listed with links; full admin registry not built |
+| [polling-and-frequency-inventory.md](polling-and-frequency-inventory.md) | Complete for User Panel `pollingInterval` usage; Modules 1-3 per-page reasoning linked; auth mutations noted as non-polling. Admin Panel A1-A3 section added |
 | [feature-coverage.md](feature-coverage.md) | Modules 1-3 verified; later rows remain initial |
-| [open-questions.md](open-questions.md) | 37 items: all 37 resolved, 0 open. Confirmed code fixes (Q-02, Q-07, Q-08, Q-09, Q-10, Q-15, Q-17, Q-19, Q-23, Q-24, Q-29, Q-30, Q-35) are listed at the end of the file |
+| [open-questions.md](open-questions.md) | 53 items: Q-01 to Q-37 resolved; Admin Panel Q-38 to Q-53 (2026-11-24): Q-39 to Q-41, Q-43 and Q-46 to Q-53 resolved by the team, Q-38 partly resolved, Q-42, Q-44 and Q-45 open. Confirmed code fixes (Q-02, Q-07, Q-08, Q-09, Q-10, Q-15, Q-17, Q-19, Q-23, Q-24, Q-29, Q-30, Q-35, Q-38, Q-39, Q-41, Q-47, Q-48, Q-52) are listed at the end of the file |
 | `shared-api-inventory.md` | Folded into the "Shared APIs" section of [api-inventory.md](api-inventory.md#shared-apis-called-from-more-than-one-component) to avoid duplication. Will become its own file if it grows |
 | [component-inventory.md](component-inventory.md) | Covers Modules 1-9 and the layout components |

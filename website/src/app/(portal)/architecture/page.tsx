@@ -8,12 +8,13 @@ export default async function ArchitecturePage() {
     getMarkdownDocument('docs/00-overview/technology-stack.md'),
     getDocumentedModules(),
   ]);
+  const hasAdminPanelDocs = (await getDocumentedModules('admin')).length > 0;
   const hasUserPanelDocs = modules.some((module) => module.group === 'User Panel');
   return <>
     <PageHeading eyebrow="Platform Architecture" title="Architecture" description="Source-verified request, state, and polling flows. Panel boundaries without documentation are not inferred." />
     <section className="mb-8 grid border-y border-slate-200 md:grid-cols-3 dark:border-slate-800" aria-label="Panel documentation coverage">
       <PanelCoverage title="User Panel" status={hasUserPanelDocs ? 'Documented' : 'Not documented'} detail="The available architecture notes verify its client, query/cache, HTTP, Redux and backend-request flow." />
-      <PanelCoverage title="Admin Panel" status="Not documented" detail="No Admin Panel architecture documentation is included in the current handbook set." />
+      <PanelCoverage title="Admin Panel" status={hasAdminPanelDocs ? 'Partly documented' : 'Not documented'} detail={hasAdminPanelDocs ? 'Roles, permissions and the API client are described in the Admin Panel overview; the request flow below covers the User Panel only.' : 'No Admin Panel architecture documentation is included in the current handbook set.'} />
       <PanelCoverage title="Result Panel" status="Not documented" detail="No Result Panel architecture documentation is included in the current handbook set." />
     </section>
     <MarkdownDocument markdown={architecture} sourcePath="docs/00-overview/application-architecture.md" />

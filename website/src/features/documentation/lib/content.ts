@@ -5,8 +5,19 @@ import remarkGfm from 'remark-gfm';
 
 const handbookRoot = path.resolve(process.cwd(), '..');
 const docsRoot = path.join(handbookRoot, 'docs');
-const userPanelRoot = path.join(docsRoot, '01-user-panel');
 const inventoryRoot = path.join(handbookRoot, 'inventory');
+
+export type PanelKey = 'user' | 'admin';
+
+/** Each panel is one folder under docs/; its module folders become portal module pages. */
+export const PANELS: Record<PanelKey, { folder: string; route: string; group: 'User Panel' | 'Admin Panel'; overview: string }> = {
+  user: { folder: '01-user-panel', route: '/user-panel', group: 'User Panel', overview: 'docs/01-user-panel/overview.md' },
+  admin: { folder: '02-admin-panel', route: '/admin-panel', group: 'Admin Panel', overview: 'docs/02-admin-panel/overview.md' },
+};
+
+function panelForFolder(folder: string | undefined): PanelKey | undefined {
+  return (Object.keys(PANELS) as PanelKey[]).find((key) => PANELS[key].folder === folder);
+}
 
 interface MarkdownNode {
   type: string;
@@ -35,7 +46,8 @@ export interface ModuleDocument {
   title: string;
   /** Title without the "Module N:" prefix and trailing "(…)" qualifier, for navigation. */
   displayTitle: string;
-  group: 'User Panel' | 'Supplemental';
+  group: 'User Panel' | 'Supplemental' | 'Admin Panel';
+  panel: PanelKey;
   overviewPath: string;
   status: string;
   documents: ModuleDocumentEntry[];
@@ -73,7 +85,7 @@ const INVENTORY_PAGES = new Set([
 ]);
 
 export function displayTitle(title: string): string {
-  return title.replace(/^Modules? \d+(?:\s*[–-]\s*\d+)?:?\s*/i, '').replace(/\s*\([^)]*\)\s*$/, '').trim() || title;
+  return title.replace(/^(?:Admin )?Modules? [A-Z]?\d+(?:\s*[–-]\s*\d+)?:?\s*/i, '').replace(/\s*\([^)]*\)\s*$/, '').trim() || title;
 }
 
 export interface OpenQuestion {
@@ -165,15 +177,14 @@ function moduleSlug(folder: string): string {
   return folder.replace(/^\d+-/, '');
 }
 
-function moduleHref(slug: string, documentKey = 'overview'): string {
-  return documentKey === 'overview'
-    ? `/user-panel/${slug}`
-    : `/user-panel/${slug}?doc=${encodeURIComponent(documentKey)}`;
+function moduleHref(slug: string, documentKey = 'overview', panel: PanelKey = 'user'): string {
+  const base = `${PANELS[panel].route}/${slug}`;
+  return documentKey === 'overview' ? base : `${base}?doc=${encodeURIComponent(documentKey)}`;
 }
 
-async function progressStatus(folder: string): Promise<string> {
+async function progressStatus(folder: string, panel: PanelKey): Promise<string> {
   const progress = await readText('inventory/documentation-progress.md');
-  const expectedPath = `01-user-panel/${folder}/overview.md`;
+  const expectedPath = `${PANELS[panel].folder}/${folder}/overview.md`;
   const row = progress.split('\n').find((line) => line.includes(expectedPath));
   if (!row) return 'Documentation status not listed';
   const cells = row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
@@ -181,17 +192,18 @@ async function progressStatus(folder: string): Promise<string> {
   return status || 'Status not confirmed from progress inventory';
 }
 
-export async function getDocumentedModules(): Promise<ModuleDocument[]> {
-  const entries = await readdir(userPanelRoot, { withFileTypes: true });
+export async function getDocumentedModules(panel: PanelKey = 'user'): Promise<ModuleDocument[]> {
+  const panelRoot = path.join(docsRoot, PANELS[panel].folder);
+  const entries = await readdir(panelRoot, { withFileTypes: true }).catch(() => []);
   const modules: ModuleDocument[] = [];
 
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
-    const folderPath = path.join(userPanelRoot, entry.name);
+    const folderPath = path.join(panelRoot, entry.name);
     const overviewAbsolute = path.join(folderPath, 'overview.md');
     try {
       const overview = await readFile(overviewAbsolute, 'utf8');
-      const status = await progressStatus(entry.name);
+      const status = await progressStatus(entry.name, panel);
       const sources = await Promise.all((await markdownFiles(folderPath)).map(async (absolute) => ({
         absolute,
         markdown: await readFile(absolute, 'utf8'),
@@ -218,7 +230,8 @@ export async function getDocumentedModules(): Promise<ModuleDocument[]> {
         folder: entry.name,
         title,
         displayTitle: displayTitle(title),
-        group: entry.name === 'authentication' ? 'Supplemental' : 'User Panel',
+        group: panel === 'user' && entry.name === 'authentication' ? 'Supplemental' : PANELS[panel].group,
+        panel,
         overviewPath: pathForHandbook(overviewAbsolute),
         status,
         documents: docs,
@@ -258,12 +271,13 @@ export function portalHrefForMarkdown(fromPath: string, href: string): string {
   }
 
   if (relative.startsWith('00-overview/')) return `/architecture${hash ? `#${hash}` : ''}`;
-  if (relative === '01-user-panel/overview.md') return `/user-panel${hash ? `#${hash}` : ''}`;
 
   const parts = relative.split('/');
-  if (parts[0] === '01-user-panel' && parts.length >= 3 && parts[1]) {
+  const panel = panelForFolder(parts[0]);
+  if (panel && parts.length === 2 && parts[1] === 'overview.md') return `${PANELS[panel].route}${hash ? `#${hash}` : ''}`;
+  if (panel && parts.length >= 3 && parts[1]) {
     const document = path.basename(parts.at(-1) ?? 'overview.md', '.md');
-    return `${moduleHref(moduleSlug(parts[1]), document)}${hash ? `#${hash}` : ''}`;
+    return `${moduleHref(moduleSlug(parts[1]), document, panel)}${hash ? `#${hash}` : ''}`;
   }
 
   if (path.basename(absolute) === 'api-inventory.md') return `/api-explorer${hash ? `#${hash}` : ''}`;
@@ -546,13 +560,10 @@ export async function getRecentDocumentation(limit = 5) {
 
 export function routeForDocumentPath(relativePath: string): string {
   if (relativePath.startsWith('docs/00-overview/')) return '/architecture';
-  if (relativePath === 'docs/01-user-panel/overview.md') return '/user-panel';
-  const moduleMatch = relativePath.match(/^docs\/01-user-panel\/([^/]+)\/([^/]+)\.md$/);
-  if (moduleMatch?.[1] && moduleMatch[2]) {
-    const slug = moduleSlug(moduleMatch[1]);
-    const document = moduleMatch[2];
-    return document === 'overview' ? `/user-panel/${slug}` : `/user-panel/${slug}?doc=${encodeURIComponent(document)}`;
-  }
+  const parts = relativePath.split('/');
+  const panel = panelForFolder(parts[1]);
+  if (panel && parts.length === 3 && parts[2] === 'overview.md') return PANELS[panel].route;
+  if (panel && parts.length === 4 && parts[2] && parts[3]) return moduleHref(moduleSlug(parts[2]), parts[3].replace(/\.md$/, ''), panel);
   if (relativePath.endsWith('/api-inventory.md')) return '/api-explorer';
   if (relativePath.endsWith('/polling-and-frequency-inventory.md')) return '/api-frequency';
   if (relativePath.endsWith('/open-questions.md')) return '/team-review';
@@ -622,9 +633,7 @@ export async function getCapabilityMap(relativePath: string): Promise<Capability
 }
 
 export function modulePageHref(module: ModuleDocument, documentKey = 'overview') {
-  return documentKey === 'overview'
-    ? `/user-panel/${module.slug}`
-    : `/user-panel/${module.slug}?doc=${encodeURIComponent(documentKey)}`;
+  return moduleHref(module.slug, documentKey, module.panel);
 }
 
 export function getLabelForDoc(pathname: string) {
