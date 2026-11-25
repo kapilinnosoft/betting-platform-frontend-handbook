@@ -2,6 +2,8 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
+import { headingSlug } from './privacy';
+import { MODULE_SEPARATOR } from './api-records';
 
 const handbookRoot = path.resolve(process.cwd(), '..');
 const docsRoot = path.join(handbookRoot, 'docs');
@@ -97,8 +99,11 @@ export interface OpenQuestion {
   status: string;
 }
 
+export type ApiPanel = 'User Panel' | 'Admin Panel';
+
 export interface ApiRecord {
   id: string;
+  panel: ApiPanel;
   name: string;
   aliases: string[];
   method: string;
@@ -359,7 +364,8 @@ function sourceDefinitions(markdown: string): Omit<ApiRecord, 'trigger' | 'frequ
         aliases: [name],
         method,
         endpoint,
-        module: inferModules(sourceFile, consumers, endpoint).join(', '),
+        panel: 'User Panel',
+        module: inferModules(sourceFile, consumers, endpoint).join(MODULE_SEPARATOR),
         source: `${sourceFile}${line ? `:${line}` : ''} (${name})`,
         consumers,
         notes: [cellValue(cells, typeIndex), notes].filter(Boolean).join(' · '),
@@ -391,7 +397,9 @@ function parseCanonicalLinks(markdown: string): Map<string, string> {
 }
 
 async function usageTables(): Promise<ParsedTable[]> {
-  const files = await markdownFiles(docsRoot);
+  // User Panel records only: admin docs reuse some paths (/users/me, /auth/login) with other triggers.
+  const adminRoot = path.join(docsRoot, PANELS.admin.folder);
+  const files = (await markdownFiles(docsRoot)).filter((file) => !file.startsWith(`${adminRoot}${path.sep}`));
   const markdown = await Promise.all(files.map((file) => readFile(file, 'utf8')));
   return markdown.flatMap(tableRows);
 }
@@ -487,7 +495,112 @@ export async function getApiRecords(): Promise<ApiRecord[]> {
     };
     grouped.set(definition.id, next);
   }
-  return [...grouped.values()].sort((a, b) => a.endpoint.localeCompare(b.endpoint));
+  const adminRecords = await getAdminApiRecords(questionText);
+  return [...grouped.values(), ...adminRecords].sort((a, b) => a.endpoint.localeCompare(b.endpoint) || a.panel.localeCompare(b.panel));
+}
+
+const POLLING_PATTERN = /\b\d+\s*(ms|s|sec|second|minute|min)\b|every\s+\d+/i;
+const REQUEST_PATTERN = /^(GET|POST|PUT|PATCH|DELETE)\s+(\S.*)$/;
+
+/** Pairs the names and requests written in one summary row ("`a` / `b`" with "`POST x` / `POST y`"). */
+function pairNamesAndRequests(names: string[], requests: { method: string; endpoint: string }[]) {
+  if (names.length === requests.length) return requests.map((request, index) => ({ ...request, names: [names[index] as string] }));
+  if (requests.length === 1) return [{ ...requests[0]!, names }];
+  return requests.map((request) => ({ ...request, names }));
+}
+
+/**
+ * Admin Panel records come from the Summary table of each admin module's api-inventory.md
+ * (columns "#", "Name", "Request"). Rows without a concrete path (grouped export rows) are skipped;
+ * the module document lists them. Same path in two admin modules is one record (first module wins
+ * for trigger and link); admin records never merge with User Panel records.
+ */
+async function getAdminApiRecords(questionText: string): Promise<ApiRecord[]> {
+  const panelRoot = path.join(docsRoot, PANELS.admin.folder);
+  const entries = (await readdir(panelRoot, { withFileTypes: true }).catch(() => []))
+    .filter((entry) => entry.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const adminQuestions = questionText.split('\n').filter((line) => /rsplay-admin/.test(line) && /BACKEND CONFIRMATION REQUIRED/.test(line)).map((line) => line.toLowerCase());
+  const grouped = new Map<string, ApiRecord>();
+
+  for (const entry of entries) {
+    const folder = path.join(panelRoot, entry.name);
+    const markdown = await readFile(path.join(folder, 'api-inventory.md'), 'utf8').catch(() => '');
+    if (!markdown) continue;
+    const polling = await readFile(path.join(folder, 'polling-and-frequency.md'), 'utf8').catch(() => '');
+    const moduleNoPolling = /\*\*Nothing in [^*]* polls\.\*\*/.test(polling);
+    const tree = remark().use(remarkGfm).parse(markdown.replace(/<!--[\s\S]*?-->/g, '')) as unknown as MarkdownNode;
+    const heading = firstHeading(markdown, entry.name);
+    const moduleCode = heading.match(/Module\s+([A-Z]\d+)/i)?.[1] ?? '';
+    const moduleName = displayTitle(heading);
+    const headings = (tree.children ?? []).filter((node) => node.type === 'heading').map((node) => nodeText(node));
+    const summary = collectTables(tree).find((table) => {
+      const headers = normalizedHeaders(table.headers);
+      return headers.includes('#') && headers.includes('name') && headers.includes('request');
+    });
+    if (!summary) continue;
+    const headers = normalizedHeaders(summary.headers);
+    const index = (name: string) => headers.findIndex((header) => header === name || header.startsWith(name));
+    const [codeIndex, nameIndex, requestIndex] = [index('#'), index('name'), index('request')];
+    const [whenIndex, repeatsIndex, consumerIndex, paramsIndex] = [index('when it runs'), index('repeats'), index('consumer'), index('parameters')];
+
+    for (const row of summary.rows) {
+      const code = cellValue(row, codeIndex);
+      const names = row[nameIndex] ? codeValues(row[nameIndex]).map((value) => value.trim()) : [];
+      const requests = (row[requestIndex] ? codeValues(row[requestIndex]) : []).flatMap((value) => {
+        const match = value.trim().match(REQUEST_PATTERN);
+        if (!match?.[1] || !match[2]) return [];
+        const endpoint = match[2].replace(/\[[^\]]*\]/g, '').trim();
+        return endpoint.startsWith('…') ? [] : [{ method: match[1], endpoint }];
+      });
+      if (!names.length || !requests.length) continue;
+
+      const trigger = cellValue(row, whenIndex) || 'Not confirmed from source.';
+      const repeats = cellValue(row, repeatsIndex);
+      const frequency = repeats || (moduleNoPolling ? 'No polling in this module' : 'Not confirmed from source.');
+      const consumerCell = row[consumerIndex];
+      const consumers = cellValue(row, consumerIndex);
+      const canonicalLink = consumerCell ? linkedValue(consumerCell) : undefined;
+      const ownHeading = headings.find((text) => new RegExp(`(^|\\W)${code}(\\W|$)`).test(text));
+      const moduleRoute = moduleHref(moduleSlug(entry.name), 'api-inventory', 'admin');
+      const detailHref = canonicalLink && !canonicalLink.startsWith('#')
+        ? portalHrefForMarkdown(pathForHandbook(path.join(folder, 'api-inventory.md')), canonicalLink)
+        : `${moduleRoute}${ownHeading ? `#${headingSlug(ownHeading)}` : ''}`;
+
+      for (const request of pairNamesAndRequests(names, requests)) {
+        const id = `admin:${request.method}:${request.endpoint}`;
+        const prior = grouped.get(id);
+        const lowerNames = request.names.map((name) => name.toLowerCase());
+        const backend = adminQuestions.some((line) => line.includes(request.endpoint.toLowerCase()) || lowerNames.some((name) => line.includes(name)));
+        if (prior) {
+          prior.aliases = [...new Set([...prior.aliases, ...request.names])];
+          if (!prior.module.split(MODULE_SEPARATOR).includes(moduleName)) prior.module = `${prior.module}${MODULE_SEPARATOR}${moduleName}`;
+          prior.source = `${prior.source}; ${moduleCode} ${code}`;
+          prior.consumers = `${prior.consumers}; ${consumers}`;
+          if (backend) prior.verification = 'Backend confirmation required';
+          continue;
+        }
+        grouped.set(id, {
+          id,
+          panel: 'Admin Panel',
+          name: request.names.join(' / '),
+          aliases: request.names,
+          method: request.method,
+          endpoint: request.endpoint,
+          module: moduleName,
+          trigger,
+          frequency,
+          polling: POLLING_PATTERN.test(`${frequency} ${trigger}`) ? 'Polling' : /Not confirmed/i.test(frequency) ? 'Not confirmed from source' : 'Non-polling',
+          source: `${moduleCode} ${code}`.trim(),
+          consumers,
+          notes: cellValue(row, paramsIndex) ? `Parameters: ${cellValue(row, paramsIndex)}` : '',
+          verification: backend ? 'Backend confirmation required' : 'Source observed; backend response not captured',
+          detailHref,
+        });
+      }
+    }
+  }
+  return [...grouped.values()];
 }
 
 export async function getOpenQuestions(): Promise<OpenQuestion[]> {

@@ -5,6 +5,19 @@ import { getPrivateLabels, createPrivacyPlugin, privateSafeHref } from '../lib/p
 import { portalHrefForMarkdown } from '../lib/content';
 import { MermaidDiagram } from './mermaid-diagram';
 
+type MarkdownNode = { type: string; value?: string; children?: MarkdownNode[] };
+
+// Markdown comments (<!-- ... -->) hold content the team has hidden for now, e.g. platform-specific
+// features. Drop them so they never render as visible text. Other inline HTML (such as <br>) is untouched.
+function remarkStripComments() {
+  const strip = (node: MarkdownNode) => {
+    if (!node.children) return;
+    node.children = node.children.filter((child) => !(child.type === 'html' && child.value?.trim().startsWith('<!--')));
+    node.children.forEach(strip);
+  };
+  return (tree: MarkdownNode) => strip(tree);
+}
+
 export async function MarkdownDocument({
   markdown,
   sourcePath,
@@ -53,7 +66,7 @@ export async function MarkdownDocument({
 
   return (
     <article className="min-w-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm, createPrivacyPlugin(labels)]} components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm, remarkStripComments, createPrivacyPlugin(labels)]} components={components}>
         {markdown}
       </ReactMarkdown>
     </article>

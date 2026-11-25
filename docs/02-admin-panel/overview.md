@@ -1,6 +1,6 @@
 # Phase 2: Admin Panel (overview)
 
-**Scope approved 2026-11-24.** The first approved Admin Panel modules are Login and layout shell (including the sidebar), Dashboard, and Downline. Other admin modules (Sport Analysis, Bet Control, My Reports, Event Management, Casino Control, Content Management, Bonus, Banking, Roles and Privileges, Commission, Coin Management, Account Statement, Export History, Settings, Activity Log) are **not** documented yet. They appear here only as sidebar links.
+**Scope approved 2026-11-24.** The first approved Admin Panel modules are Login and layout shell (including the sidebar), Dashboard, and Downline. Account Statement, Export Report History, and Change Password / Activity Log / Logout followed on 2026-11-25. Other admin modules (Sport Analysis, Bet Control, My Reports, Event Management, Casino Control, Content Management, Bonus, Banking, Roles and Privileges, Commission, Coin Management, General Settings) are **not** documented yet. They appear here only as sidebar links.
 
 **Reference.** `rsplay/rsplay-admin@12f0054` (2026-11-20, branch `staging`), read at `HEAD` with `git show HEAD:<path>`. The working tree was clean when it was read. Paths in the admin docs are relative to `src/`, and citations use `path:line (Name)`.
 
@@ -13,6 +13,9 @@
 | A1 | [Login and layout shell](01-login-and-layout/overview.md): login, MFA, "Login as", session, route guards, header, notifications, [sidebar](01-login-and-layout/sidebar.md) | overview, sidebar, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
 | A2 | [Dashboard](02-dashboard/overview.md): balance bar, live events, user management, analytics cards, charts, login summary | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
 | A3 | [Downline](03-downline/overview.md): hierarchy listing, create member, member actions, account details, settlement | overview, member-listing, create-member, member-actions, account-details, settlement, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
+| A4 | [Account Statement](04-account-statement/overview.md): Deposit/Withdraw and Game Transaction tabs, filters, export | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
+| A5 | [Export Report History](05-export-history/overview.md): export list, status, download, registry of every export request | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
+| A6 | [Change Password, Activity Log and Logout](06-settings-and-activity-log/overview.md): `/settings` password form, own login history, logout (linked to A1) | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
 
 ## Roles and the hierarchy
 

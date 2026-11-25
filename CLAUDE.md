@@ -7,9 +7,9 @@ This repository holds the canonical Markdown handbook plus its Next.js documenta
 2. Check which module or phase is approved. Phase 1 is the User Panel, and each module needs explicit approval before work starts on it.
 
 ## Source repositories
-- Primary: `/home/innosoft/Projects/rsplay/rsplay-user` at commit `810884b`.
+- Primary: `/home/innosoft/Projects/rsplay/rsplay-user` at commit `810884b` for Modules 1-9, and `7a89e53` (branch `staging`) for Modules 10 onward (team decision 2026-11-25; Modules 1-4 still to be re-checked). Phase 1 additions approved 2026-11-25: Referrals (Module 10), Bonuses (Module 11), Push notifications (Module 13); Turnover History (Module 12 kept free) and Affiliates await scope decisions. Never copy Firebase config values from rsplay `public/sw.js` or `FIREBASE_NOTIFICATIONS.md` into the handbook.
 - Secondary: `/home/innosoft/Projects/vishnu7/vishnu7user` at commit `6f3b811`.
-- Admin Panel (Phase 2): `/home/innosoft/Projects/rsplay/rsplay-admin` at commit `12f0054` (branch `staging`). Approved so far: Login/layout with sidebar, Dashboard, Downline.
+- Admin Panel (Phase 2): `/home/innosoft/Projects/rsplay/rsplay-admin` at commit `12f0054` (branch `staging`). Approved so far: Login/layout with sidebar, Dashboard, Downline, Account Statement, Export Report History, Change Password / Activity Log / Logout.
 - Read the **last commit** only. In vishnu7, read files with `git show HEAD:<path>` because its working tree has uncommitted edits (`src/App.tsx`, `src/routes/index.tsx`, `src/hooks/index.ts` and new favicon files).
 - If either repo's HEAD moves, re-check affected docs and update the commit in `README.md`.
 

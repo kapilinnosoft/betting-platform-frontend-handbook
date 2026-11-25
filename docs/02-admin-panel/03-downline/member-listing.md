@@ -58,7 +58,7 @@ What `level: 1` means together with `rollId` (direct children only, or the whole
 | S. No. | — | `(page − 1) × size + row + 1` | |
 | New User Access | `isVerified` | checkbox | Owner and role users only. See [member actions](member-actions.md#new-user-access) |
 | userName | `role`, `username` | role badge (AD, SM, SSM, MA, PL, BA, OW) + underlined link | opens the drill-down list |
-| Credit Reference | `creditAmount` | number | edit button commented out |
+| Credit Reference | `creditAmount` | number | |
 | Balance | `availableBalance` | number | |
 | Exposure | `exposure` | `(n)` in red | |
 | Partnership % | `partnership` | as is | |
@@ -93,7 +93,7 @@ What `level: 1` means together with `rollId` (direct children only, or the whole
 | Status | `status` | pill |
 | Phone No. | `mobile` | `-` when empty |
 | Created At | `createdAt` | `MMM DD, YYYY h:mm A` (moment) |
-| Actions | — | D, W, Coin, Profile, Sport Permission, Change Status, Bet History |
+| Actions | — | D, W, Profile, Sport Permission, Change Status, Bet History |
 
 The field meanings (for example how `referance` "Point W/L" differs from `lifetimePl`) are not defined in the frontend. They are `BACKEND CONFIRMATION REQUIRED`. The response type is `Member` (`types/index.ts:445-477`).
 

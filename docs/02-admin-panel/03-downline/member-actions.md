@@ -6,7 +6,6 @@
 |---|---|---|---|---|
 | D (Deposit) | ✓ | ✓ | `update` | `POST users/{id}/wallets/deposit` |
 | W (Withdraw) | ✓ | ✓ | `update` | `POST users/{id}/wallets/withdraw` |
-| Coin | — | ✓ | `update` | `POST /coin/deposit/{id}` / `POST /coin/withdraw/{id}` |
 | Profile | ✓ | ✓ | `detailedView` | opens [account details](account-details.md) |
 | Sport Permission | ✓ | ✓ | `update` | `GET` + `PUT /sports-permission/{id}` |
 | Change Status | ✓ | ✓ | `update` | `PATCH /users/change-status/{id}` |
@@ -14,6 +13,10 @@
 | New User Access | ✓ (Owner and role users) | — | `update` | `PATCH /users/change/{id}` |
 | Login As | ✓ (Owner only) | — | `update` | `GET /auth/gettoken/{id}` |
 | Change Password | from Account Summary only | same | Account Summary rule | `PATCH /admin/users/password/{id}` |
+
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+| Coin | — | ✓ | `update` | `POST /coin/deposit/{id}` / `POST /coin/withdraw/{id}` |
+-->
 
 ## Deposit and Withdraw
 
@@ -37,9 +40,13 @@ Full body: `{ amount, fromAccount, toAccount, userId, narration, refernce }`. `u
 
 When the buttons are disabled: `disabled={!canUpdate && isDisable(status)}` (agent rows) and `!canUpdate && (isselfregistered || isDisable(status))` (user rows). Because of the `&&`, Owner and agents can open D/W for inactive, suspended and bet-locked members, and for self-registered users (F2, Q-41). Team (2026-11-24): the backend does not reject transfers for any status; financial activity must be limited to **active** members by the frontend, so this is a confirmed defect.
 
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+
 ## Coin (USER rows)
 
 `pages/Downline/Modal/CoinDepositWithdraw.tsx`. The modal has Deposit and Withdraw tabs. The amount is validated by `CoinTransactionSchema` (coerced number, 1 to 999,999,999; `validation.tsx:512-518`). Body: `{ userId, amount, fromAccount, toAccount, narration: 'Coin Deposit' | 'Coin Withdraw' }`, with from/to chosen the same way as D/W (`CoinDepositWithdraw.tsx:61-68`). Requests: `POST /coin/deposit/{userId}` and `POST /coin/withdraw/{userId}` (`store/api/coinApi.ts:46-63`). They invalidate `CoinManagement`, `Wallet`, `Bankers`, `Members`. There is no client-side balance check for coin withdraw.
+
+-->
 
 ## Sport Permission
 
@@ -77,8 +84,11 @@ Owner only, agent levels only. The full hand-off is in [A1 › Login as](../01-l
 
 | Modal | Why | Source |
 |---|---|---|
+| Any modal on the drill-down list | nothing sets `activeModal` | `SubUsers.tsx:834-867` |
+
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
 | Credit Reference edit (`CreditLimit`, `POST /users/{id}/wallets/give/credit-limit`) | edit icons are commented out | `AllDownlineListing.tsx:227-237`; `SubUsers.tsx:162-172` |
 | Owner MFA Status (`GET /mfa/owner/status`, `POST /mfa/owner/disable`) | MFA buttons are commented out | `AllDownlineListing.tsx:505-519`; `SubUsers.tsx:678-692` |
-| Any modal on the drill-down list | nothing sets `activeModal` | `SubUsers.tsx:834-867` |
+-->
 
 Their API definitions are listed in [api-inventory.md](api-inventory.md#defined-for-downline-but-not-reachable) for completeness.

@@ -12,8 +12,6 @@
 | DL4 | `addMember` | `POST /users/sub-user` | Create submit | `Modal/CreateMember.tsx` |
 | DL5 | `deposit` | `POST users/{userId}/wallets/deposit` | D submit | `components/common/DepositWithdraw.tsx` |
 | DL6 | `withdraw` | `POST users/{userId}/wallets/withdraw` | W submit | same |
-| DL7 | `depositCoin` | `POST /coin/deposit/{userId}` | Coin › Deposit | `Modal/CoinDepositWithdraw.tsx` |
-| DL8 | `withdrawCoin` | `POST /coin/withdraw/{userId}` | Coin › Withdraw | same |
 | DL9 | `getSportPermission` | `GET /sports-permission/{userId}` | Sport Permission opened | `Modal/SportPermission.tsx` |
 | DL10 | `updateSportPermission` | `PUT /sports-permission/{userId}` | Sport Permission submit | same |
 | DL11 | `changeStatus` | `PATCH /users/change-status/{userId}` | Change Status submit | `Modal/ChangeStatus.tsx` |
@@ -77,9 +75,16 @@ This endpoint is different from the Dashboard's `GET /dashboard/balance-summary`
 
 `commonApi.ts:91-106` / `:107-122`. Body `{ amount, fromAccount, toAccount, narration, refernce }`; `userId` goes in the path. Deposit invalidates `BalanceSummaryDataApi`, `Bankers`, `Members`, `Wallet`. Withdraw invalidates `Bankers`, `Members`, `Wallet`. Details: [member actions](member-actions.md#deposit-and-withdraw).
 
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+
+| DL7 | `depositCoin` | `POST /coin/deposit/{userId}` | Coin › Deposit | `Modal/CoinDepositWithdraw.tsx` |
+| DL8 | `withdrawCoin` | `POST /coin/withdraw/{userId}` | Coin › Withdraw | same |
+
 ## DL7 `depositCoin` / DL8 `withdrawCoin`
 
 `store/api/coinApi.ts:46-63`. Body `{ amount, fromAccount, toAccount, narration }` (`CoinDepositWithdraw.tsx:62-68`). Invalidates `CoinManagement`, `Wallet`, `Bankers`, `Members`.
+
+-->
 
 ## DL9 `getSportPermission` / DL10 `updateSportPermission`
 
@@ -139,7 +144,7 @@ This endpoint is different from the Dashboard's `GET /dashboard/balance-summary`
 
 ## DL26 Exports from account details
 
-All in `store/api/ExportApi.ts`, all `POST`, each starting an export job (the result appears in Export Report History, which is not documented yet).
+All in `store/api/ExportApi.ts`, all `POST`, each starting an export job (the result appears in [Export Report History](../05-export-history/overview.md); full registry in [A5 EX2](../05-export-history/api-inventory.md#ex2-export-requests-that-feed-this-list)). `exportAccountStatement` is documented in [A4 AS3](../04-account-statement/api-inventory.md#as3-exportaccountstatement) and `exportActivityLog` in [A6 ST3](../06-settings-and-activity-log/api-inventory.md#st3-exportactivitylog).
 
 | Name | URL | Tab |
 |---|---|---|
@@ -154,13 +159,16 @@ All in `store/api/ExportApi.ts`, all `POST`, each starting an export job (the re
 
 | Name | Request | Why not reachable | Definition |
 |---|---|---|---|
-| `addCreditRefrence` | `POST /users/{userId}/wallets/give/credit-limit` `{ creditLimit, fromAccount, toAccount }` | Credit edit icons commented out | `DownlineApi.ts:193-211` |
-| `getOwnerMfaStatus` | `GET /mfa/owner/status?userId=&role=` | MFA buttons commented out | `DownlineApi.ts:363-369` |
-| `disableOwnerMfa` | `POST /mfa/owner/disable` `{ userId, role }` | same | `DownlineApi.ts:370-376` |
 | `roleUserChangePassword` | `PATCH /privileges/change-password/{id}` `{ newPassword }` | `isRoleUser` never passed to the modal | `rolesApi.ts:196-211` |
 | `getCasinoDetail` | `GET /casino/profit/loss/{userId}` | `/casino-detail` route has no tab | `DownlineApi.ts:178-191` |
 | `updateTransactionCode` | `POST users/transaction-code/viewed` | transaction-code flow commented out | `DownlineApi.ts:248-253` |
 | `upsertBetLock`, `getDownlineBetStatus` | `/sports-permission/upsert-betlock`, `/sports-permission/downline/bet-status` | used by other admin modules, not Downline (not documented yet) | `DownlineApi.ts:70-124` |
+
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+| `addCreditRefrence` | `POST /users/{userId}/wallets/give/credit-limit` `{ creditLimit, fromAccount, toAccount }` | Credit edit icons commented out | `DownlineApi.ts:193-211` |
+| `getOwnerMfaStatus` | `GET /mfa/owner/status?userId=&role=` | MFA buttons commented out | `DownlineApi.ts:363-369` |
+| `disableOwnerMfa` | `POST /mfa/owner/disable` `{ userId, role }` | same | `DownlineApi.ts:370-376` |
+-->
 
 ## Check of the team-supplied "Account list flow" list (2026-11-24)
 
@@ -174,15 +182,18 @@ The team pasted an API list for an "Account list flow (`/users`)". rsplay-admin 
 | `POST /users/:userId/wallets/deposit` / `withdraw` (D / W) | ✓ DL5 / DL6 |
 | `GET /users/me/wallets` (own balance in the D/W popup) | ✗ in the D/W popup, which shows the member's row values. Used by the layout header and the Settlement popup ([A1 L10](../01-login-and-layout/api-inventory.md#l10-getwallet)) |
 | `PATCH /users/exposure-limit/:userId` (L, exposure limit) | `NOT FOUND` |
-| `POST /users/:userId/wallets/give/credit-limit` (C) | defined, **not reachable** |
 | `PATCH /admin/users/password/:id` (P, account users) | ✓ DL15 (from Account Summary, not a row button) |
 | `PATCH /privileges/change-password/:id` (P, role users) | defined, not used by Downline |
 | `PATCH /users/change-status/:userId` (S) | ✓ DL11 (one status dialog; no separate "U st / B st") |
 | `PATCH /users/:userId/settings` (US, user settings) | `NOT FOUND` |
 | `GET` / `PUT /sports-permission/:userId` | ✓ DL9 / DL10 |
-| `GET /mfa/owner/status`, `POST /mfa/owner/disable` | defined, **not reachable** |
 | `GET /role/available` (account type dropdown) | ✓ endpoint ([A1 L7](../01-login-and-layout/api-inventory.md#l7-availbleroles)), but rsplay-admin has no account-type dropdown: the role comes from the level being listed |
 | `POST /users/sub-user` (create) | ✓ DL4 |
 | `GET /users/me/sub-users?search=` (header client search) | `NOT FOUND`: no header search; the list sends `username` |
+
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+| `POST /users/:userId/wallets/give/credit-limit` (C) | defined, **not reachable** |
+| `GET /mfa/owner/status`, `POST /mfa/owner/disable` | defined, **not reachable** |
+-->
 
 `OBSERVED`: the list also does not match `betx777/betex777-admin@0221735`, which uses `/user-exposure-limit/{userId}` and has no `/users/{id}/settings`. The team confirmed (Q-53) that endpoints missing from the admin panel code are out of scope: the handbook documents only what the admin panel code calls. Endpoints marked `NOT FOUND` are therefore not documented.

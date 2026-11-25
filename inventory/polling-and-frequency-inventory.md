@@ -103,6 +103,14 @@ The same [Module 3 polling reference](../docs/01-user-panel/03-game-detail/polli
 
 Q-04 (two raw-scorecard timers) was resolved in Modules 5–7: only one runs. See [open-questions.md](open-questions.md).
 
+## Module 13: Push notifications (rsplay `7a89e53`)
+
+No polling: notifications are pushed by Firebase. `POST /firebase/firebase/devices` is sent once per app load while logged in with notification permission granted (and after Allow on the fallback card); `DELETE /firebase/firebase/devices/:fid` once at logout from the profile drawer, capped at 3 s. A session ended by a failed token refresh sends no DELETE. Details: [Module 13 polling](../docs/01-user-panel/13-push-notifications/polling-and-frequency.md).
+
+## Modules 10-11: Referrals and Bonuses (rsplay `7a89e53`)
+
+Neither module polls. The Referral page makes no request: it reads `referralCode` from the profile the header loads (`GET /users/me`), and the referral link only opens the register modal once per app load. The Bonus Statement requests `GET /bonuses/applicants/list` on mount (after the profile id exists) and on each filter, search (500 ms), page or size change; it has no Refresh button and no `t` cache-buster. The bonus balance in the profile drawer follows the header's 5 s `GET /users/me/wallets` poll. Details: [Module 10 polling](../docs/01-user-panel/10-referrals/polling-and-frequency.md), [Module 11 polling](../docs/01-user-panel/11-bonuses/polling-and-frequency.md).
+
 ## Module 9: Deposit and Withdraw (rsplay)
 
 No deposit or withdraw API polls. Lists and history load on mount and on filter or page changes; mutations refresh them through the `Account` and `CryptoWithdrawWallet` tags. The withdrawable balance follows the layout's 5 s `GET /users/me/wallets` poll, and `FeatureRoute` subscribes to the 30 s `GET /system` poll. See [Module 9 polling](../docs/01-user-panel/09-wallet/polling-and-frequency.md).
@@ -123,7 +131,7 @@ No report API polls. Account statement, bet history and casino bet history make 
 
 Signup OTP, registration, and login are user-triggered POST mutations; none is configured with `pollingInterval` (`rsplay:src/pages/Auth/hooks/useRegister.ts:65-99 (useRegister)`, `rsplay:src/pages/Auth/hooks/useLogin.ts:32-42 (useLoginPage)`, `vishnu7:src/pages/auth/SignupPage.tsx:87-128 (SignupPage)`, `vishnu7:src/pages/auth/LoginPage.tsx:47-55 (LoginPage)`). See the [API inventory](../docs/01-user-panel/authentication/api-inventory.md).
 
-## Admin Panel (Phase 2): rsplay-admin `12f0054`, Modules A1-A3
+## Admin Panel (Phase 2): rsplay-admin `12f0054`, Modules A1-A6
 
 Global facts for the admin app: RTK Query `^1.9.7`, `pollingInterval` only (no WebSocket in these modules); `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0` on the whole `apiSlice`, so every mount refetches (`store/api/apiSlice.ts:40-41`); most queries add `ts: Date.now()` (design intent, as Q-06); a 401 signs the user out after 2 s with no refresh call.
 
@@ -134,4 +142,4 @@ Global facts for the admin app: RTK Query `^1.9.7`, `pollingInterval` only (no W
 | `GET /users/me/wallets` | 20 s | layout | header balance | same |
 | `GET /dashboard/live-games` | 60 s | Dashboard | live-event odds and platform position | [A2 polling](../docs/02-admin-panel/02-dashboard/polling-and-frequency.md) |
 
-Downline (A3) has no polling; see [A3 polling](../docs/02-admin-panel/03-downline/polling-and-frequency.md). The Dashboard header clock uses a 1 s `setInterval` that makes no API call (`components/common/Header.tsx:65-71`).
+Downline (A3), Account Statement (A4), Export Report History (A5) and Change Password / Activity Log (A6) have no polling; see [A3](../docs/02-admin-panel/03-downline/polling-and-frequency.md), [A4](../docs/02-admin-panel/04-account-statement/polling-and-frequency.md), [A5](../docs/02-admin-panel/05-export-history/polling-and-frequency.md) and [A6](../docs/02-admin-panel/06-settings-and-activity-log/polling-and-frequency.md). Export Report History also has no Refresh button, so a `Pending` export does not update on screen (Q-57). The Dashboard header clock uses a 1 s `setInterval` that makes no API call (`components/common/Header.tsx:65-71`).

@@ -15,7 +15,7 @@ Response shapes come from TypeScript types and the fields the code reads. No liv
 | L5 | `getMfaStatus` | `GET /mfa/status` | Layout mount (any logged-in role) | once per mount, and after disabling MFA | `layouts/DashboardLayout.tsx` |
 | L6 | `getUser` | `GET /users/me` | Layout mount | **every 20 s** | `DashboardLayout.tsx` (plus `useRoleCheck` on the same cache entry) |
 | L7 | `availbleRoles` | `GET /role/available` | Layout mount | once per mount | `DashboardLayout.tsx` |
-| L8 | `changePassword` / `OwnerChangePassword` | `POST /users/me/change-password` / `POST /admin/change-password` | Forced "Create Password" submit (also `/settings`, not documented yet) | once per submit | `components/common/ChangePassword.tsx` |
+| L8 | `changePassword` / `OwnerChangePassword` | `POST /users/me/change-password` / `POST /admin/change-password` | Forced "Create Password" submit (also `/settings`, [A6](../06-settings-and-activity-log/overview.md#change-password)) | once per submit | `components/common/ChangePassword.tsx` |
 | L9 | `logout` | `POST /auth/logout` | Sidebar Logout; forced logouts | once per action | `EnhancedSidebar.tsx`, `DashboardLayout.tsx`, `ChangePassword.tsx` |
 | L10 | `getWallet` | `GET /users/me/wallets` | Layout mount | **every 20 s** | `DashboardLayout.tsx` (also `pages/Settlement/modal/SettlementModal.tsx`) |
 | L11 | `getLoginAsToken` (lazy) | `GET /auth/gettoken/{userId}` | **Login As** click (Owner) | once per click | `pages/Downline/AllDownlineListing.tsx` |

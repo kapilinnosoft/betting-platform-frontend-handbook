@@ -31,11 +31,13 @@ export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
     () => modules.filter((module) => module.displayTitle.toLowerCase().includes(filter)),
     [modules, filter],
   );
+ 
+  
   const visibleModules = matching.filter((module) => module.group === 'User Panel');
   const visibleSupplemental = matching.filter((module) => module.group === 'Supplemental');
   const visibleAdmin = matching.filter((module) => module.group === 'Admin Panel');
+  console.log("modules",visibleAdmin,modules);
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
-
   const linkClass = (href: string) => cn(
     'flex min-h-9 items-center gap-2 rounded-md px-2.5 text-[13px] text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white',
     pathname === href && 'bg-teal-50 font-semibold text-teal-800 hover:bg-teal-50 dark:bg-teal-950/60 dark:text-teal-200 dark:hover:bg-teal-950/60',
@@ -59,7 +61,7 @@ export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
           <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-slate-400" aria-hidden="true" />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search documentation" aria-label="Search documentation navigation" className="h-9 w-full rounded-md border border-slate-200 bg-white pl-8 pr-2 text-xs outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100" />
         </label>
-        <nav className="mt-4 space-y-1" aria-label="Documentation">
+        <nav className="-mr-2 mt-4 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pb-4 pr-2 [scrollbar-width:thin]" aria-label="Documentation">
           {visibleLinks.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={linkClass(href)} onClick={() => setMobileOpen(false)}><Icon className="size-4 shrink-0" aria-hidden="true" /><span>{label}</span></Link>)}
           <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">User Panel modules</div>
           {visibleModules.map((module) => {
@@ -79,7 +81,7 @@ export function Sidebar({ modules }: { modules: ModuleDocument[] }) {
           <div className="pb-1 pt-5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Panels</div>
           <span className="flex min-h-9 items-center px-2.5 text-[13px] text-slate-400" aria-disabled="true">Result Panel <span className="ml-auto text-[10px]">Undocumented</span></span>
         </nav>
-        <div className="mt-auto border-t border-slate-200 pt-4 text-[11px] leading-5 text-slate-400 dark:border-slate-800">Source-backed internal reference</div>
+        <div className="shrink-0 border-t border-slate-200 pt-4 text-[11px] leading-5 text-slate-400 dark:border-slate-800">Source-backed internal reference</div>
       </aside>
     </>
   );

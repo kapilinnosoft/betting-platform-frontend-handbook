@@ -31,7 +31,7 @@ Names only; values are deployment configuration and are not recorded here.
 | `VITE_API_BASE_URL` | `src/store/api/apiSlice.ts` (both) | API base URL, falling back to `'/api'` |
 | `VITE_MAINTENANCE_MODE` | `src/App.tsx` (both) | `'true'` renders only the maintenance page |
 
-Other `import.meta.env` variables (Firebase config and others) will be listed when the module that uses them is documented.
+Other `import.meta.env` variables are listed with the module that uses them. The seven `VITE_FIREBASE_*` variables (rsplay) are named in [Module 13 › Configuration](../01-user-panel/13-push-notifications/api-inventory.md#configuration-names-only); their values are not reproduced.
 
 ## Scripts
 

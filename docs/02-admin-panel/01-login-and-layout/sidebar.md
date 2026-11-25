@@ -37,12 +37,12 @@ The source comment says "Show only if at least one action is true", but the code
 | Banking Management ▸ Deposit/Withdraw Request, Manage Accounts, Crypto Conversion Settings | `/requests`, `/manage-account`, `/crypto-conversion` | `BankingManagement` | | not yet |
 | Roles And Privileges | `/roles-and-privileges` | `Roles Privileges` | | not yet |
 | Commision (spelled this way in the UI) ▸ Setting, Report | `/match-odds-commission-setting`, `/match-odds-commission-report` | `Commission` | routes are `ownerOnly` | not yet |
-| Account Statement | `/rolewise-account-statement` | `Account Statement` | | not yet |
+| Account Statement | `/rolewise-account-statement` | `Account Statement` | | [A4](../04-account-statement/overview.md) |
 | Coin Management | `/coin-management` | `CoinManagement` | | not yet |
-| Export Report History | `/export` | `Export History` | | not yet |
-| Change Password | `/settings` | — | always shown | not yet |
+| Export Report History | `/export` | `Export History` | | [A5](../05-export-history/overview.md) |
+| Change Password | `/settings` | — | always shown | [A6](../06-settings-and-activity-log/overview.md#change-password) |
 | General Settings | `/general-settings` | `General Settings` | route is `ownerOnly` | not yet |
-| Activity Log | `/activity-logs` | `Activity Logs` | | not yet |
+| Activity Log | `/activity-logs` | `Activity Logs` | | [A6](../06-settings-and-activity-log/overview.md#activity-log) |
 
 "Risk Management" (`/risk`) is commented out of both menus (`EnhancedSidebar.tsx:304-311,538-544`), but its routes still exist (`App.tsx:297-300`).
 

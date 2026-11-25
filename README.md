@@ -22,7 +22,7 @@ For production, run `npm run build` then `npm run start` from `website/`. The po
 
 | Role | Repository | Commit documented |
 |---|---|---|
-| **Primary** User Panel reference | `/home/innosoft/Projects/rsplay/rsplay-user` | `810884b` (2026-11-12, branch `main`) |
+| **Primary** User Panel reference | `/home/innosoft/Projects/rsplay/rsplay-user` | `810884b` (2026-11-12, branch `main`) for Modules 1-9; `7a89e53` (2026-11-25, branch `staging`) for Modules 10 onward. Modules 1-4 are to be re-checked against the commits in between |
 | **Secondary** User Panel reference (covers features rsplay lacks) | `/home/innosoft/Projects/vishnu7/vishnu7user` | `6f3b811` (2026-11-16, branch `staging`) |
 | Admin Panel reference (Phase 2) | `/home/innosoft/Projects/rsplay/rsplay-admin` | `12f0054` (2026-11-20, branch `staging`) |
 

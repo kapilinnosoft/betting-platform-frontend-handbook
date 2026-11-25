@@ -22,7 +22,7 @@
 
 - `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0` (`store/api/apiSlice.ts:40-41`): going back to a list always refetches it.
 - `ts: Date.now()` is added inside each query function, so it is not part of the cache key. Identical filters reuse the same entry while it is mounted.
-- Mutations that invalidate `Members` (create, deposit, withdraw, coin, sport permission, status, user access, settlement) refetch every mounted list query that provides `Members`: `getMembers`, and `getLoginHistory` on Activity Log. `getSubMembers` provides **no** tag, but no mutation can run on the drill-down page anyway.
+- Mutations that invalidate `Members` (create, deposit, withdraw, sport permission, status, user access, settlement) refetch every mounted list query that provides `Members`: `getMembers`, and `getLoginHistory` on Activity Log. `getSubMembers` provides **no** tag, but no mutation can run on the drill-down page anyway.
 - Withdraw does not invalidate `BalanceSummaryDataApi`, so the balance strip keeps the old totals after a withdraw until the page is opened again.
 
 ## Request volume

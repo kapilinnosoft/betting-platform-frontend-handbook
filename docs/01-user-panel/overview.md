@@ -102,5 +102,17 @@ One common module covers catalogue markets, odds selection, bet slip, limits, ex
 
 **Documented →** [09-wallet/overview.md](09-wallet/overview.md) (rsplay only, team decision 2026-11-19). UPI, bank and crypto deposit; bank, UPI and crypto withdraw from saved accounts; add/delete accounts; request history. The other implementation has no deposit or withdraw pages.
 
+## Module 10: Referrals
+
+**Documented →** [10-referrals/overview.md](10-referrals/overview.md) (rsplay only, at `7a89e53`, approved 2026-11-25). The Referral page (copy and share the code and link), the referral link that opens the register modal, and the code sent at sign-up. No API of its own.
+
+## Module 11: Bonuses
+
+**Documented →** [11-bonuses/overview.md](11-bonuses/overview.md) (rsplay only, at `7a89e53`, approved 2026-11-25). The Bonus Statement page (`GET /bonuses/applicants/list`), instalments and their turnover running total, the bonus balance in the profile drawer and the footer bonus rule.
+
+## Module 13: Push notifications
+
+**Documented →** [13-push-notifications/overview.md](13-push-notifications/overview.md) (rsplay only, at `7a89e53`, approved 2026-11-25). Browser push through Firebase Cloud Messaging: the permission prompt and fallback card, device registration (`POST /firebase/firebase/devices`), foreground toasts, background notifications from the service worker, where a click opens, and device removal at logout. Module number 12 is kept for Turnover History.
+
 ## Out of Phase 1 scope (noted for completeness)
-Login and Signup are documented as a supplemental common module in [authentication](authentication/overview.md); the formal eight-module Phase 1 numbering is unchanged. Deposit and withdraw are now documented as [Module 9](09-wallet/overview.md) (rsplay only, approved 2026-11-19). Other out-of-scope features include coins, referral, profile, change password, MFA, and push notifications. See the [central API inventory](../../inventory/api-inventory.md).
+Login and Signup are documented as a supplemental common module in [authentication](authentication/overview.md); the formal eight-module Phase 1 numbering is unchanged. Deposit and withdraw are now documented as [Module 9](09-wallet/overview.md) (rsplay only, approved 2026-11-19). Referrals, bonuses and push notifications are now Modules 10, 11 and 13. Other out-of-scope features include coins, profile, change password and MFA. See the [central API inventory](../../inventory/api-inventory.md).

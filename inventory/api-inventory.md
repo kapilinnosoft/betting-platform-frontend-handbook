@@ -7,6 +7,8 @@ This is the central registry of every RTK Query endpoint defined in the two refe
 | rsplay-user | `810884b` | 94 definitions, 83 unique names (11 duplicate names, explained below) | 17 |
 | vishnu7user | `6f3b811` | 64 definitions, 64 unique names | 16 |
 
+rsplay-user has moved to `7a89e53` (10 commits). Modules 10 onward are documented at `7a89e53`. Those commits change `store/api/eventsApi.ts` and `store/api/betReportApi.ts`, so the rsplay rows below for those two files may be out of date until the registry is regenerated (Modules 1-4 re-check, pending).
+
 ## Method (how this list was produced)
 
 `OBSERVED`. A script read every `.ts`/`.tsx` file at `HEAD` (`git show HEAD:<file>`) and collected each `name: builder.query|mutation` or `build.query|mutation`. For each endpoint it captured `url`, `method`, `providesTags`/`invalidatesTags` and whether `transformResponse`/`onQueryStarted` is present. It then searched every other file for the generated hook names (`useXQuery`, `useLazyXQuery`, `useXMutation`, `useXQueryState`) and for `endpoints.X`.
@@ -93,6 +95,9 @@ This section grows as modules are completed. "Canonical" means the full request,
 | rsplay | `getIsMasterOwner` | [Module 9 › W11](../docs/01-user-panel/09-wallet/api-inventory.md#w11-getismasterowner) | Deposit/withdraw access rule |
 | rsplay | `createCryptoDepositWithdrawRequest` | [Module 9 › W12](../docs/01-user-panel/09-wallet/api-inventory.md#w12-createcryptodepositwithdrawrequest) | Crypto deposit (USDT) and withdraw (INR) |
 | rsplay | `getCryptoAccounts`, `getCryptoNetwork`, `addCryptoAccount`, `deleteCryptoAccount` | [Module 9 › W13–W16](../docs/01-user-panel/09-wallet/api-inventory.md#w13-getcryptoaccounts) | Saved crypto wallets |
+| rsplay | `getBonusApplicants` | [Module 11 › B1](../docs/01-user-panel/11-bonuses/api-inventory.md#b1-getbonusapplicants) | Bonus Statement (`/bonus-statement`); documented at `7a89e53` |
+| rsplay | `registerFcmDevice` | [Module 13 › P1](../docs/01-user-panel/13-push-notifications/api-inventory.md#p1-registerfcmdevice) | Push device registration after login; documented at `7a89e53` |
+| rsplay | `deleteFcmDevice` | [Module 13 › P2](../docs/01-user-panel/13-push-notifications/api-inventory.md#p2-deletefcmdevice) | Push device removal at logout |
 | vishnu7 | `getBanners` | [Module 1 › V1–V2](../docs/01-user-panel/01-home-page/api-inventory.md#v1v2-getbanners-canonical-vishnu7) | |
 | vishnu7 | `getHomeCasinoGames`, `getHomeProviderGames` | [Module 1 › V3–V4](../docs/01-user-panel/01-home-page/api-inventory.md#v3v4-gethomecasinogames-gethomeprovidergames-canonical) | |
 | vishnu7 | `getMatchesGroupedByCompetition` | [Module 1 › V6](../docs/01-user-panel/01-home-page/api-inventory.md#v6-getmatchesgroupedbycompetition-canonical-shared-with-module-2) | [Module 2 In-Play and sport-route arguments](../docs/01-user-panel/02-inplay/api-inventory.md#vishnu7-6f3b811), `SearchDropdown` |
@@ -210,7 +215,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 
 | Endpoint | Type | Method | URL (as written in source) | Cache tags | Consumers (files calling the hook) | Notes |
 |---|---|---|---|---|---|---|
-| `getBonusApplicants` (L6) | query | GET | `/bonuses/applicants/list` | P:['BonusApplicants'] | `pages/BonusStatement/index.tsx` |  |
+| `getBonusApplicants` (L6) | query | GET | `/bonuses/applicants/list` | — | `pages/BonusStatement/index.tsx` | `providesTags: ['BonusApplicants']` is commented out (`bonusApi.ts:12`, checked at `7a89e53`). See [Module 11 › B1](../docs/01-user-panel/11-bonuses/api-inventory.md#b1-getbonusapplicants) |
 
 ### `src/store/api/booksetApi.ts`
 
@@ -291,8 +296,8 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 
 | Endpoint | Type | Method | URL (as written in source) | Cache tags | Consumers (files calling the hook) | Notes |
 |---|---|---|---|---|---|---|
-| `registerFcmDevice` (L5) | mutation | POST | `/firebase/firebase/devices` | — | `lib/pushNotifications.ts` |  |
-| `deleteFcmDevice` (L12) | mutation | DELETE | `/firebase/firebase/devices/${encodeURIComponent(fid)}` | — | `lib/pushNotifications.ts` |  |
+| `registerFcmDevice` (L5) | mutation | POST | `/firebase/firebase/devices` | — | `lib/pushNotifications.ts` | Dispatched with `initiate`, not the hook. Body `{ fid: <FCM token> }`. See [Module 13 › P1](../docs/01-user-panel/13-push-notifications/api-inventory.md#p1-registerfcmdevice) |
+| `deleteFcmDevice` (L12) | mutation | DELETE | `/firebase/firebase/devices/${encodeURIComponent(fid)}` | — | `lib/pushNotifications.ts` | Dispatched with `initiate` at logout (3 s cap). See [Module 13 › P2](../docs/01-user-panel/13-push-notifications/api-inventory.md#p2-deletefcmdevice) |
 
 ### `src/store/api/notificationApi.ts`
 
@@ -343,7 +348,7 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 
 | Endpoint | Type | Method | URL (as written in source) | Cache tags | Consumers (files calling the hook) | Notes |
 |---|---|---|---|---|---|---|
-| `getTurnover` (L6) | query | GET | `/turnover` | P:['Turnover'] | `pages/Reports/Turnover.tsx` |  |
+| `getTurnover` (L6) | query | GET | `/turnover` | — | `pages/Reports/Turnover.tsx` | `providesTags: ['Turnover']` is commented out (`turnoverHistory.ts:18`, checked at `7a89e53`). `Turnover.tsx` has no route |
 
 ### `src/store/api/userApi.ts`
 
@@ -481,9 +486,9 @@ Paths are relative to the repo root. "L" is the line of the endpoint definition.
 
 ## Admin Panel (Phase 2): rsplay-admin `12f0054`
 
-Scope: Modules A1-A3 only (Login and layout, Dashboard, Downline), approved 2026-11-24. This is **not** a full registry of rsplay-admin endpoints. Other admin modules will be added when approved. Full request, response and UI detail is in each module's API inventory, linked below. The admin app has one `apiSlice` with `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0`, and it signs the user out on 401 with no refresh call ([phase overview](../docs/02-admin-panel/overview.md#how-the-admin-app-talks-to-the-backend)).
+Scope: Modules A1-A3 (Login and layout, Dashboard, Downline, approved 2026-11-24) and A4-A6 (Account Statement, Export Report History, Change Password / Activity Log / Logout, approved 2026-11-25). This is **not** a full registry of rsplay-admin endpoints. Other admin modules will be added when approved. Full request, response and UI detail is in each module's API inventory, linked below. The admin app has one `apiSlice` with `refetchOnMountOrArgChange: true` and `keepUnusedDataFor: 0`, and it signs the user out on 401 with no refresh call ([phase overview](../docs/02-admin-panel/overview.md#how-the-admin-app-talks-to-the-backend)).
 
-These tables use the column names "Name" and "Request" on purpose. The portal's API Explorer currently builds User Panel records from tables headed Endpoint / Method / URL, and admin rows must not merge into them.
+These tables use the column names "Name" and "Request" on purpose, so the portal's User Panel parser (tables headed Endpoint / Method / URL) skips them. The API Explorer builds its Admin Panel entries from the **Summary table of each admin module's `api-inventory.md`** (one entry per method and path, panel "Admin Panel"), never from this table. Admin entries never merge with User Panel entries that share a path. Grouped rows without a single path (A3 DL26 exports, A5 EX2 export registry) are not listed in the Explorer; see their module pages.
 
 | Name | Request | Documented in | Notes |
 |---|---|---|---|
@@ -506,12 +511,20 @@ These tables use the column names "Name" and "Request" on purpose. The portal's 
 | `getSubMembers` | `GET /users/sub-users/{id}` | [A3 DL3](../docs/02-admin-panel/03-downline/api-inventory.md#dl3-getsubmembers) | drill-down |
 | `addMember` | `POST /users/sub-user` | [A3 DL4](../docs/02-admin-panel/03-downline/api-inventory.md#dl4-addmember) | partnership rule |
 | `deposit`, `withdraw` | `POST users/{id}/wallets/deposit`, `POST users/{id}/wallets/withdraw` | [A3 DL5/DL6](../docs/02-admin-panel/03-downline/api-inventory.md#dl5-deposit--dl6-withdraw) | |
-| `depositCoin`, `withdrawCoin` | `POST /coin/deposit/{id}`, `POST /coin/withdraw/{id}` | [A3 DL7/DL8](../docs/02-admin-panel/03-downline/api-inventory.md#dl7-depositcoin--dl8-withdrawcoin) | |
 | `getSportPermission`, `updateSportPermission` | `GET` / `PUT /sports-permission/{id}` | [A3 DL9/DL10](../docs/02-admin-panel/03-downline/api-inventory.md#dl9-getsportpermission--dl10-updatesportpermission) | |
 | `changeStatus`, `changeUserAccess` | `PATCH /users/change-status/{id}`, `PATCH /users/change/{id}` | [A3 DL11/DL12](../docs/02-admin-panel/03-downline/api-inventory.md#dl11-changestatus) | |
 | `getAccountSummary`, `membersChangePassword` | `GET /users/account/summary/{id}/{path}`, `PATCH /admin/users/password/{id}` | [A3 DL14/DL15](../docs/02-admin-panel/03-downline/api-inventory.md#dl14-getaccountsummary) | |
 | account-details reports | `GET users/transactions/deposit-withdraw/{id}`, `/users/transactions/all`, `/reports/bet`, `reports/casino-bet`, `/reports/event/profitloss`, `reports/market/profitloss/{eventId}/{id}`, `activity-log/{id}`, `/competitions`, `/events` | [A3 DL16-DL24](../docs/02-admin-panel/03-downline/api-inventory.md#dl16-gettransactionhistory) | |
 | `settlement` | `POST /users/{id}/wallets/settlement` | [A3 DL25](../docs/02-admin-panel/03-downline/api-inventory.md#dl25-settlement) | |
 | exports | six `POST` export endpoints | [A3 DL26](../docs/02-admin-panel/03-downline/api-inventory.md#dl26-exports-from-account-details) | |
+| `getMyTransactions` | `GET /users/me/transactions` | [A4 AS1](../docs/02-admin-panel/04-account-statement/api-inventory.md#as1-getmytransactions) | Account Statement › Deposit/Withdraw; same path as User Panel S1, different parameters |
+| `getGameTransactions` | `GET /users/transactions/game-transactions` | [A4 AS2](../docs/02-admin-panel/04-account-statement/api-inventory.md#as2-getgametransactions) | Account Statement › Game Transaction |
+| `exportAccountStatement` | `POST /users/transactions/export-userTransaction` | [A4 AS3](../docs/02-admin-panel/04-account-statement/api-inventory.md#as3-exportaccountstatement) | used by both Account Statement tabs (Q-55) and Downline |
+| `getAllExports` | `GET /exports/report/me` | [A5 EX1](../docs/02-admin-panel/05-export-history/api-inventory.md#ex1-getallexports) | Export Report History; no polling (Q-57) |
+| export requests (registry) | 19 `POST` export endpoints in use in `ExportApi.ts` (2 more defined, unused) | [A5 EX2](../docs/02-admin-panel/05-export-history/api-inventory.md#ex2-export-requests-that-feed-this-list) | names, URLs and calling pages; parameters documented with each owning module |
+| `getActivityLogs` | `GET activity-log` | [A6 ST4](../docs/02-admin-panel/06-settings-and-activity-log/api-inventory.md#st4-getactivitylogs) | own login history |
+| `exportActivityLog` | `POST /activity-log/export` | [A6 ST3](../docs/02-admin-panel/06-settings-and-activity-log/api-inventory.md#st3-exportactivitylog) | also Downline; `searchByUserId` from local storage (Q-54) |
 
-Defined but not reachable from A1-A3 at this commit: `getCaptcha`, `addCreditRefrence`, `getOwnerMfaStatus`, `disableOwnerMfa`, `roleUserChangePassword`, `getCasinoDetail`, `updateTransactionCode` ([A3 list](../docs/02-admin-panel/03-downline/api-inventory.md#defined-for-downline-but-not-reachable)).
+Defined but not reachable from A1-A6 at this commit: `exportGameAccountStatement`, `exportAffiliateList`, `getCaptcha`, `roleUserChangePassword`, `getCasinoDetail`, `updateTransactionCode` ([A3 list](../docs/02-admin-panel/03-downline/api-inventory.md#defined-for-downline-but-not-reachable)).
+
+Downline Coin (`depositCoin`, `withdrawCoin`), Credit Reference edit (`addCreditRefrence`) and Owner MFA Status (`getOwnerMfaStatus`, `disableOwnerMfa`) are platform-specific and hidden from the handbook until they are offered (team, 2026-11-25). Their detail is kept as comments in the A3 files.

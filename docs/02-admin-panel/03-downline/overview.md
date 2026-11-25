@@ -1,6 +1,6 @@
 # Admin Module A3: Downline (overview)
 
-**Scope.** Downline is where all user management happens. It covers the role-level lists (`/members/{roleId}`), drilling into an agent's own downline, creating members, member actions (deposit and withdraw, coin, sport permission, status, new-user access, Login As, password), a member's account details, and Settlement.
+**Scope.** Downline is where all user management happens. It covers the role-level lists (`/members/{roleId}`), drilling into an agent's own downline, creating members, member actions (deposit and withdraw, sport permission, status, new-user access, Login As, password), a member's account details, and Settlement.
 
 **Reference.** `rsplay/rsplay-admin@12f0054`, paths relative to `src/`. Roles, the hierarchy and the permission model are explained in the [phase overview](../overview.md#roles-and-the-hierarchy). Read that first.
 
@@ -9,7 +9,7 @@
 | this page | Routes, how the pages connect, permissions, findings |
 | [member-listing.md](member-listing.md) | The role-level list and the drill-down list: filters, columns, balance strip |
 | [create-member.md](create-member.md) | "+ Add" form, partnership (percentage) rule, request |
-| [member-actions.md](member-actions.md) | D/W, Coin, Sport Permission, Change Status, New User Access, Login As, Change Password |
+| [member-actions.md](member-actions.md) | D/W, Sport Permission, Change Status, New User Access, Login As, Change Password |
 | [account-details.md](account-details.md) | A member's tabs: summary, statement, bets, P&L, transactions, activity log |
 | [settlement.md](settlement.md) | Settling P/L for direct downline, single and bulk |
 | [api-inventory.md](api-inventory.md) | Every API in this module |
@@ -40,7 +40,7 @@ flowchart LR
   SB["Sidebar ▸ Downline ▸ level"] --> L["/members/{roleId}<br/>AllDownlineListing"]
   DASH["Dashboard: User Management card"] --> L
   L -->|"+ Add {level}"| CM["Create member modal"]
-  L -->|"row actions"| ACT["D / W / Coin / Sport Permission /<br/>Change Status / New User Access / Login As"]
+  L -->|"row actions"| ACT["D / W / Sport Permission /<br/>Change Status / New User Access / Login As"]
   L -->|"click username (agent rows)"| SU["/members/{id}/{role}/{user}/{memberid}/{upline}<br/>SubUsers"]
   SU -->|"click username (non-USER)"| SU
   L -->|"profile icon → …/sub/{memberid}/d/{upline}/account-summary"| AD["Account details"]
@@ -67,7 +67,7 @@ For a role user, buttons are enabled from the `Users` module flags (`AllDownline
 | Flag | Enables |
 |---|---|
 | `create` | "+ Add {level}" button |
-| `update` | D, W, Coin, Sport Permission, Change Status, New User Access, Login As, Settlement transfer, Change Password (Account Summary) |
+| `update` | D, W, Sport Permission, Change Status, New User Access, Login As, Settlement transfer, Change Password (Account Summary) |
 | `detailedView` | profile and bet-history icons |
 | `download` | export buttons in account-details tabs |
 
@@ -77,7 +77,6 @@ Some actions also depend on the role itself:
 |---|---|---|
 | New User Access column | Owner and role users | `AllDownlineListing.tsx:156-188` |
 | Login As column | Owner only | `AllDownlineListing.tsx:524-557` |
-| Coin action | rows on the USER level list | `AllDownlineListing.tsx:849-864` |
 | Change Password (Account Summary) | when the member's upline role id equals the logged-in role id | `AccountDetails/AccountSummary.tsx:127,330-351` |
 
 ## Findings
@@ -92,12 +91,17 @@ All `OBSERVED` from source unless labelled. More detail is on each page.
 | F4 | **Activity Log ignores the member in the URL.** It loads the member saved in `localStorage.accountSummary` by the last Account Summary visit. The tab list is chosen the same way | `AccountDetails/ActivityLog.tsx:26,35-46`; `AccountDetails/AccountDetails.tsx:21,41-44` (Q-43; **team-confirmed intent**: the local-storage entry is kept in sync with the current member in normal navigation; a hand-typed deep link is the remaining edge case) |
 | F5 | **The profile icon is enabled by `detailedView`, but it opens `account-summary`, which needs `update`.** A role user with view-only rights is redirected to `/settings` | `AllDownlineListing.tsx:470-479`; `App.tsx:150-157` (Q-45) |
 | F6 | **The drill-down page and every level list show the logged-in account's totals.** The balance strip calls `GET /users/summary` with no member id, not the totals of the agent being viewed | `SubUsers.tsx:51,721`; `AllDownlineListing.tsx:75,979` (Q-50; **team-confirmed intent**) |
-| F7 | **The drill-down page's modals cannot be opened.** Sport Permission, Change Status, Credit Reference, Password and MFA modals are wired up, but no button sets `activeModal` | `SubUsers.tsx:834-867` |
+| F7 | **The drill-down page's modals cannot be opened.** Sport Permission, Change Status and Password modals are wired up, but no button sets `activeModal` | `SubUsers.tsx:834-867` |
 | F8 | **Role ids are hard-coded in two places.** The drill-down default tab is `6`, with fallback ids `3, 4, 13, 5, 6`. The Settlement profile link uses `2`/`3`/`4` and compares against `'SUPERMASTER'`, which never matches `'SUPER MASTER'` | `SubUsers.tsx:58-64,78,93-95`; `Settlement/index.tsx:234-238` (Q-48; **team-confirmed defect**: take ids from `/role/available`) |
 | F9 | **A failed status change shows a success-styled toast** (`showToastMessage('success', <error>)`) | `Modal/ChangeStatus.tsx:50-52` (Q-47; **team-confirmed defect**) |
 | F10 | **Deposit and withdraw always send the narration "Deposit by Owner" / "Withdraw by Owner"**, also when an agent performs them | `components/common/DepositWithdraw.tsx:120-121` |
 | F11 | **Settlement bulk amount nets positive and negative P/L**, while a single transfer sends the absolute value. Team (Q-46): bulk settles the full amount of each selected member; no money moves in a negative direction |  [settlement.md](settlement.md) |
 | F12 | **Account Summary shows a hard-coded staging admin URL as "Domain"** for every member, and logs `uplineId` to the console | `AccountDetails/AccountSummary.tsx:83,104-110` (Q-52; **team-confirmed defect**: make it configurable per platform) |
-| F13 | **Dead code:** `CreditLimit` and `OwnerMfaStatus` cannot be reached (Credit edit and MFA buttons are commented out). `'password-change'` in the level list's modal map is never set. `getCasinoDetail` is reachable only by typing `…/casino-detail` (no tab). `upsertBetLock` and `getDownlineBetStatus` are not used by these pages | `AllDownlineListing.tsx:227-237,505-519,935-938`; `AccountDetails.tsx:22-40` |
+| F13 | **Dead code:** `'password-change'` in the level list's modal map is never set. `getCasinoDetail` is reachable only by typing `…/casino-detail` (no tab). `upsertBetLock` and `getDownlineBetStatus` are not used by these pages | `AllDownlineListing.tsx:935-938`; `AccountDetails.tsx:22-40` |
+
+<!-- Platform-specific (team, 2026-11-25): hidden until this feature is offered on the platform. Remove the comment markers to show it again.
+| Coin action | rows on the USER level list | `AllDownlineListing.tsx:849-864` |
+| F13 (part) | `CreditLimit` (Credit Reference edit) and `OwnerMfaStatus` (Owner MFA Status) cannot be reached: the edit and MFA buttons are commented out | `AllDownlineListing.tsx:227-237,505-519` |
+-->
 
 Questions raised: Q-40 to Q-48, Q-50 and Q-52. Answered by the team on 2026-11-24 except Q-42 and Q-45, which stay open. See [open-questions.md](../../../inventory/open-questions.md).

@@ -50,5 +50,5 @@ Status at Step 3 (module analysis). Rows for Modules 1-3, the four scoped Module
 | 8 Casino | Documentation | Not covered (team decision 2026-11-19) | [Module 8](../docs/01-user-panel/08-casino/overview.md), verified for vishnu7 |
 | — | Auth | Login, register with OTP, demo login, forgot/reset; token refresh on 401 | Login, register, demo login, forgot/reset, Telegram/mobile MFA verification; no refresh |
 | 9 Deposit and Withdraw | Wallet (deposit/withdraw, bank/UPI/crypto) | `/deposit`, `/withdraw` behind `FeatureRoute`; [Module 9](../docs/01-user-panel/09-wallet/overview.md), verified | NOT FOUND |
-| — | Push notifications (FCM) | `registerFcmDevice` / `deleteFcmDevice` | NOT FOUND |
+| 13 Push notifications | Push notifications (FCM) | `registerFcmDevice` / `deleteFcmDevice`, `public/sw.js`; [Module 13](../docs/01-user-panel/13-push-notifications/overview.md), verified at `7a89e53` | NOT FOUND |
 | — | i18n | `src/i18n`, `i18next` | NOT FOUND |
