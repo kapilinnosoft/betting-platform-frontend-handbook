@@ -72,5 +72,5 @@ This table is a registry. Each request's parameters are documented in full in th
 
 | Name | Request | Note |
 |---|---|---|
-| `exportGameAccountStatement` | `POST users/transactions/export-game-transactions` (`:789-821`) | No caller. The Account Statement Game Transaction tab uses `exportAccountStatement` instead (Q-55) |
+| `exportGameAccountStatement` | `POST users/transactions/export-game-transactions` (`:789-821`) | No caller; not used anywhere (team, Q-55). The Account Statement Game Transaction tab uses `exportAccountStatement`, which is the export in use |
 | `exportAffiliateList` | `POST /affiliate/export-list` (`:624-651`) | No caller at HEAD |

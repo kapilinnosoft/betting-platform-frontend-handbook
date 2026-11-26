@@ -72,8 +72,8 @@ The password change logs the user out with an in-app navigation, not a full page
 
 | # | Finding | Where |
 |---|---|---|
-| F1 | **The button is disabled only while the agent request runs.** It uses `isLoading` from `changePassword`, not `isOwnerLoading`, so the Owner and role users can submit twice while the first request is still running | `ChangePassword.tsx:56-57,142-143` (Q-58) |
-| F2 | **If logout fails after a successful change, the user sees "Failed to change password"** (the logout call is inside the same `try`) and stays logged in, although the password was changed | `ChangePassword.tsx:80-91` (Q-58) |
+| F1 | **The button is disabled only while the agent request runs.** It uses `isLoading` from `changePassword`, not `isOwnerLoading`, so the Owner and role users can submit twice while the first request is still running. **Confirmed fix (Q-58 a):** disable the button, and show "Changing...", while either request or the logout runs (`isLoading || isOwnerLoading || logoutLoading`) | `ChangePassword.tsx:56-57,142-143` (Q-58) |
+| F2 | **If logout fails after a successful change, the user sees "Failed to change password"** (the logout call is inside the same `try`) and stays logged in, although the password was changed. **Confirmed fix (Q-58 b):** handle the logout separately (own `try`/`catch`, or ignore its errors) and always clear local auth and redirect after a successful change | `ChangePassword.tsx:80-91` (Q-58) |
 | F3 | The `role` prop is passed by the page but never used. The form decides by `useRoleCheck` | `pages/settings/ChangePassword.tsx:7,16`; `ChangePassword.tsx:42,62` |
 
 ---
@@ -111,10 +111,10 @@ A member's activity log inside Downline account details is a different page with
 | ISP | `isp` | masked as `*****` until the row's eye icon is clicked | all | `index.tsx:106-118` |
 | City / State / Country | `city`, `state`, `country` | joined with ` / `, masked until revealed | all | `index.tsx:119-134` |
 | Security | `anonymous.is_tor`, `is_vpn`, `is_proxy`, `is_relay` | a red badge per detected flag (Tor, VPN, Proxy, Relay), or a green "Clean" badge | Owner and role users | `index.tsx:135-165` |
-| Connection | `isHosting` | `'true'` → "Hosting", anything else → "Mobile" | Owner and role users | `index.tsx:166-179` |
+| Connection | `isHosting` | `'true'` → "Hosting", anything else → "Mobile" (intended, Q-59) | Owner and role users | `index.tsx:166-179` |
 | Action | — | eye icon toggles masking for that row | all | `index.tsx:182-204` |
 
-Masking is a display choice only. The full ISP and location are in the response (`index.tsx:45-47`).
+Masking is a display choice only. The full ISP and location are in the response (`index.tsx:45-47`), and the user can reveal them with the row's Action button or the detail row; this is intended (team, Q-59).
 
 ### Detail row (Owner and role users)
 
@@ -126,7 +126,7 @@ For the Owner and role users, each row expands (`enableAccordion`) into an `Info
 | Network Information | ISP Name, ASN (`as.asn`), Domain (`as.domain`), Type (`as.type`), IP Address |
 | Security & Connection Flags | Anonymous (`isAnonymous`), VPN, Proxy, Tor, Relay ("Detected" / "Not Detected"), Mobile Network (`mobile.name` present), Hosting Provider, Satellite, Anycast |
 
-Empty values show `-`. The detail row is **not** masked, so expanding a row shows the ISP and location even when the table cells are masked (`Infocard.tsx:3,54-76`, `OBSERVED`).
+Empty values show `-`. The detail row is **not** masked, so expanding a row shows the ISP and location even when the table cells are masked (`Infocard.tsx:3,54-76`, `OBSERVED`). This is intended: the masked values are meant to be viewable on request (team, Q-59).
 
 ### Export
 
@@ -146,8 +146,8 @@ All `OBSERVED` from source unless labelled.
 | # | Finding | Where |
 |---|---|---|
 | F4 | **Export uses the last-viewed Downline member's id**, or fails with "Export failed" if no member was viewed. The table lists the logged-in account's own log | `index.tsx:28,215-221`; `AccountSummary.tsx:84-87` (Q-54) |
-| F5 | **"Connection" shows "Mobile" for every row whose `isHosting` is not `'true'`**, so a non-hosting desktop or broadband login is also labelled "Mobile" (`INFERRED` from the field meaning). `mobile.name` (the actual mobile-network signal) is used only in the detail row | `index.tsx:171-176`; `Infocard.tsx:90-93` (Q-59) |
-| F6 | **The detail row shows ISP and location unmasked** while the table masks them | `index.tsx:262-269`; `Infocard.tsx:54-76` (Q-59) |
+| F5 | "Connection" shows "Hosting" when `isHosting` is `'true'` and "Mobile" otherwise. **Intended** (team, Q-59). `mobile.name` is used only in the detail row's Mobile Network flag | `index.tsx:166-179`; `Infocard.tsx:90-93` |
+| F6 | ISP and location are masked in the table and shown in full in the detail row. **Intended** (team, Q-59): the Action button is how the user reveals them | `index.tsx:262-269`; `Infocard.tsx:54-76` |
 | F7 | S. No. restarts at 1 on every page (Export History continues the count across pages) | `index.tsx:53` |
 | F8 | `isError` is read but not used; a failed request shows an empty table | `index.tsx:32` |
 | F9 | `device` and `remark` are in the response type but not shown | `types/index.ts:85-95` |
@@ -158,4 +158,4 @@ All `OBSERVED` from source unless labelled.
 
 The sidebar **Logout** button is part of the layout and is documented in A1: [session and logout](../01-login-and-layout/overview.md#session-and-logout) and [L9 `logout`](../01-login-and-layout/api-inventory.md#l9-logout). In this module, logout also runs after a successful password change (above).
 
-Questions raised: Q-54, Q-58 and Q-59 in [open-questions.md](../../../inventory/open-questions.md).
+Questions raised: Q-54, Q-58 and Q-59 in [open-questions.md](../../../inventory/open-questions.md). Q-58 is two confirmed fixes; Q-59 is intended behaviour.

@@ -28,8 +28,8 @@ The source comment says "Show only if at least one action is true", but the code
 | Sport Analysis | `/sport-analysis` | `RiskManagement` | | not yet |
 | Bet Control | `/bet-control` | `BetControl` | | not yet |
 | My Reports ▸ Bet List, Casino Bet List, P/L Report By Downline, By Event, By Player, By Casino Downline, By Casino Players, Business Report | `/bet-list`, `/casino-bet-list`, `/pl-by-downline`, `/pl-by-event`, `/pl-by-player`, `/casinopl-by-downline`, `/casinopl-by-player`, `/business-reports` | `MyReport` | | not yet |
-| Event Management ▸ Events, Fixtures, Bet Config | `/event-management`, `/fixtures`, `/bet-setting` | `EventManagement` | routes are `ownerOnly` | not yet |
-| Casino Control | `/casino-management` | `CasinoControl` | route is `ownerOnly` | not yet |
+| Event Management ▸ Events, Fixtures, Bet Config | `/event-management`, `/fixtures`, `/bet-setting` | `EventManagement` | routes are `ownerOnly` | [A7](../07-event-management/overview.md) |
+| Casino Control | `/casino-management` | `CasinoControl` | route is `ownerOnly` | [A8](../08-casino-control/overview.md) |
 | Content Management | `/content-management` | `ContentManagement` | | not yet |
 | Firebase Notifications | `/firebase-notifications` | `FirebaseNotifications` | `onlyOwner` | not yet |
 | Bonus Management ▸ Policy Management, Bonus Statement | `/bonus/policy-management`, `/bonus/statement` | `Bonus` | routes are `ownerOnly` | not yet |

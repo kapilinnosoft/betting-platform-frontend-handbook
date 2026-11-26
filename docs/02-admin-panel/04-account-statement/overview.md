@@ -50,7 +50,7 @@ Only the active tab's query runs. The other is skipped (`skip: isGameTab` / `ski
 
 Tab labels come from `transectiionTypes` (`utils/constent.ts:155-158`). Switching tabs resets every filter, the date range, the search and the page (`index.tsx:252-256,265-272,346-351`).
 
-Whose rows each tab returns is decided by the backend. AS1 is the logged-in account's own transactions (`/users/me/…`). AS2 has a **Player** column, so it lists game transactions of players (`INFERRED` from the column). The exact scope for each role is `BACKEND CONFIRMATION REQUIRED` (Q-56).
+Whose rows each tab returns is decided by the backend. AS1 is the logged-in account's own transactions (`/users/me/…`). AS2 has a **Player** column, so it lists game transactions of players (`INFERRED` from the column). Only the active tab's query runs: AS1 on the Deposit/Withdraw tab, AS2 on the Game Transaction tab (team, Q-56; `index.tsx:54-83`). The exact rows each role gets are decided by the backend.
 
 ## Filters
 
@@ -62,7 +62,7 @@ Whose rows each tab returns is decided by the backend. AS1 is the logged-in acco
 | Search ("Search by user name...") | free text, 500 ms debounce | `search` | yes | `index.tsx:59,260-264,318-326` |
 | Date range | `DateRangePicker` presets (Today, Yesterday, Last 7 / 30 / 90 days, This month) or From / To dates | `fromDate` = start of the from-day, `toDate` = end of the to-day, both UTC ISO | yes | `index.tsx:60-63,332-340`; `components/common/DateRangePicker.tsx:54-110` |
 
-- **No date range on page open.** `appliedRange` starts as `null`, so the first request has no `fromDate` or `toDate` (`index.tsx:46-47`). What the backend returns without dates is `BACKEND CONFIRMATION REQUIRED` (Q-56).
+- **No date range on page open, by design.** `appliedRange` starts as `null`, so the first request has no `fromDate` or `toDate` (`index.tsx:46-47`). The backend then returns the full record set, page by page; pagination keeps the load stable. Once the user picks dates, the list is filtered by date (team, Q-56).
 - **The date range is applied when the picker closes.** The picker calls `onApply` on a click outside it. There is no separate Apply button (`DateRangePicker.tsx:147-157`).
 - **Stale search text after a tab switch.** The search input has no `value` prop. A tab switch clears the `search` state but the typed text stays in the box (`index.tsx:318-326,271`, `OBSERVED`).
 
@@ -81,7 +81,7 @@ Whose rows each tab returns is decided by the backend. AS1 is the logged-in acco
 | Balance | `availableBalance` | `formatNumberWithCommas` | both | `index.tsx:195-199` |
 | From/To | `fromAccount` → `toAccount` | Shown only when both are present, else `--` | Deposit/Withdraw | `index.tsx:200-221` |
 
-`formatNumberWithCommas` turns its input into a number and returns `0` when that fails (`utils/index.ts:107-117`). An `id` that is not numeric therefore shows as **0**, and a numeric one gets thousands separators. The `?? '--'` fallback never applies (Q-56).
+`formatNumberWithCommas` turns its input into a number and returns `0` when that fails (`utils/index.ts:107-117`). Transaction ids are numeric (team, Q-56), so the id always shows with thousands separators. The `0` result for a non-numeric value and the `?? '--'` fallback do not occur in practice.
 
 No totals row is computed on this page. The `totals` prop is commented out (`index.tsx:369-370`).
 
@@ -96,11 +96,11 @@ The header's Excel, PDF and CSV buttons call `handleExport('Excel' | 'Pdf' | 'Cs
 | Result | `success` → "File Export Successfully"; otherwise the response `message` or "Failted To Export" (spelled this way); error → "Export failed" | `index.tsx:242-249` |
 | Where the file appears | The request starts a file job. The file is listed in [Export Report History](../05-export-history/overview.md) | `INFERRED` from `ExportResponse` (`exportId`, `status`) and the shared export flow |
 
-Differences between the export and the table (`OBSERVED`, Q-55):
+Differences between the export and the table (`OBSERVED`; team answers Q-55):
 
-- **Both tabs use the same export request.** The Game Transaction tab also calls `export-userTransaction`. `exportGameAccountStatement` (`POST users/transactions/export-game-transactions`, `store/api/ExportApi.ts:789-821`) exists but no file calls it.
-- **Dates are sent as raw `Date` objects**, not ISO strings. The table sends `startOf('day').toISOString()`, but the export passes `appliedRange.from` / `.to` directly. The admin `apiSlice` has no custom params serializer, so RTK Query's `fetchBaseQuery` turns them into `Date.toString()` text (for example `Tue Nov 25 2026 00:00:00 GMT+0530 (…)`) (`index.tsx:237-238`; `store/api/apiSlice.ts:6-21`, `INFERRED` from RTK's default `URLSearchParams` handling).
-- **Search is not sent**, so a filtered-by-user table exports every user.
+- **Both tabs use the same export request, as intended.** `export-userTransaction` is the export in use for both tabs. `exportGameAccountStatement` (`POST users/transactions/export-game-transactions`, `store/api/ExportApi.ts:789-821`) is not used anywhere (team, Q-55).
+- **Dates are sent as raw `Date` objects**, not ISO strings. The table sends `startOf('day').toISOString()`, but the export passes `appliedRange.from` / `.to` directly. The admin `apiSlice` has no custom params serializer, so RTK Query's `fetchBaseQuery` turns them into `Date.toString()` text (for example `Tue Nov 25 2026 00:00:00 GMT+0530 (…)`) (`index.tsx:237-238`; `store/api/apiSlice.ts:6-21`, `INFERRED` from RTK's default `URLSearchParams` handling). **Confirmed fix:** send the dates in the corrected format (team, Q-55).
+- **Search is not sent**, so a filtered-by-user table exports every user. **Confirmed fix:** include `search` in the export (team, Q-55).
 
 ## Refresh
 
@@ -112,13 +112,13 @@ All `OBSERVED` from source unless labelled.
 
 | # | Finding | Where |
 |---|---|---|
-| F1 | **The Game Transaction tab exports with the Deposit/Withdraw export request.** The game export endpoint is defined but unused | `index.tsx:227,234`; `ExportApi.ts:789-821` (Q-55) |
-| F2 | **Export dates are not ISO strings** and differ from the table's start-of-day / end-of-day values; search is not exported | `index.tsx:234-241` (Q-55) |
-| F3 | **Transaction Id is formatted as a number.** A non-numeric id shows as `0`; a numeric id gets commas. The copy button still copies the raw id | `index.tsx:104-105`; `utils/index.ts:107-117` (Q-56) |
-| F4 | **No date range by default.** The first request sends no dates, unlike Export History, which defaults to the last 7 days | `index.tsx:46-47,60-63` (Q-56) |
+| F1 | Both tabs export with `export-userTransaction`; this is the export in use. `exportGameAccountStatement` is defined but not used anywhere (team, Q-55) | `index.tsx:227,234`; `ExportApi.ts:789-821` |
+| F2 | **Export dates are not ISO strings** and differ from the table's start-of-day / end-of-day values; search is not exported. Both are **confirmed fixes** (Q-55) | `index.tsx:234-241` |
+| F3 | Transaction Id is formatted as a number with commas; ids are numeric (team, Q-56). The copy button copies the raw id | `index.tsx:104-105`; `utils/index.ts:107-117` |
+| F4 | No date range by default, by design: the full record set is loaded page by page until the user picks dates (team, Q-56). Export History, by contrast, defaults to the last 7 days | `index.tsx:46-47,60-63` |
 | F5 | **`getGameTransactions` sends the params object as is.** An empty search is sent as `search=` and there is no `ts` cache-buster, while `getMyTransactions` drops empty values and adds `t` | `store/api/commonApi.ts:134-164` |
 | F6 | **The search box keeps its text after a tab switch** while the search filter is cleared | `index.tsx:318-326` |
 | F7 | **Amount shows `+` when `type` is missing** (anything that is not `debit` is treated as credit for the sign) | `index.tsx:166` |
 | F8 | The From/To column reads `fromAccount` / `toAccount`, which the `Transaction` type (AS1) does not declare. Only the game-transaction type has them | `types/accountStatement.ts:1-17,58-59` |
 
-Questions raised: Q-55 and Q-56 in [open-questions.md](../../../inventory/open-questions.md).
+Questions raised: Q-55 and Q-56 in [open-questions.md](../../../inventory/open-questions.md), both answered by the team on 2026-11-25.

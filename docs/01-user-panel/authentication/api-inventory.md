@@ -91,7 +91,7 @@ The backend template accepts this body. The team says it is **flexible**: `first
 |---|---|---|---|
 | `firstname`, `lastname` | optional (team) | yes | no |
 | `username`, `password`, `dialCode`, `mobile`, `country`, `mobileVerificationCode` | yes | yes | yes |
-| `referralCode` | yes | always (`""` when blank; see [Module 10](../10-referrals/overview.md#signing-up-with-a-code), Q-60) | when non-empty |
+| `referralCode` | yes | always (`""` when blank, which the backend reads as no referral; see [Module 10](../10-referrals/overview.md#signing-up-with-a-code), Q-60) | when non-empty |
 | `email`, `emailVerificationCode` | yes | no | no |
 | `code` | **not in the contract** | no | yes (same OTP as `mobileVerificationCode`) |
 

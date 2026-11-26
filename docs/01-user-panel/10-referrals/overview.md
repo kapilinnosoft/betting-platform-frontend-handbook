@@ -95,11 +95,30 @@ The promotional paragraph, including the brand name, is part of the translation 
 | Validation | `z.string().optional()`: no format or length check in the browser | `utils/validations.ts:127` (`registerSchema`) |
 | Sent | `referralCode: data.referralCode` in the `POST /auth/register` body, **always**, as `""` when blank | `useRegister.ts:87-99` (`handleSubmitForm`); request in [Login and Signup](../authentication/api-inventory.md#post-authregister) |
 
-Whether the backend accepts an empty string, and what it does with an unknown code, is `BACKEND CONFIRMATION REQUIRED` (Q-60).
+**A blank code means no referral.** The backend treats `""` as "no referral" (team, Q-60). What it does with an unknown or inactive code is still `BACKEND CONFIRMATION REQUIRED` (Q-60 b).
 
 ## What the page does not show
 
-`OBSERVED` (search at HEAD): the user app has no request or page for referred users, referral counts or referral earnings. The only referral reward the user sees is a bonus row with category `ReferralBonus` in the Bonus Statement ([Module 11](../11-bonuses/overview.md)). How and when that bonus is granted is a backend rule and is not documented here (Q-61).
+`OBSERVED` (search at HEAD): the user app has no request or page for referred users, referral counts or referral earnings. The only referral reward the user sees is a bonus row with category `ReferralBonus` in the Bonus Statement ([Module 11](../11-bonuses/overview.md)). How that bonus is set up is described below.
+
+## How a referral bonus is set up (admin side)
+
+The team's answer to Q-61: referral bonuses are not fixed. Admins create them as bonus policies, and what a user receives depends on the policies that are **active**. The admin app shows which settings a referral policy has. Source: `rsplay/rsplay-admin@12f0054`, paths relative to `src/`. The Bonus Management module of the Admin Panel is not documented in full yet; this section covers only the referral settings.
+
+| Item | Rule | Source |
+|---|---|---|
+| Where | **Bonus Management › Policy Management** (`/bonus/policy-management`), Owner only, behind the `Bonus` module permission | `App.tsx:276-281`; `components/common/EnhancedSidebar.tsx:389-407` |
+| Category | "Referral Bonus", saved as `category: 'ReferralBonus'`, the value the user's Bonus Statement shows | `pages/Bonus/utils/constants.ts:1-5`; `pages/Bonus/utils/helper.ts:59-63` |
+| Status and dates | Active or Inactive, with a start and end date (start of the from-day to end of the to-day) | `helper.ts:126-133` |
+| Who gets the bonus | **Bonus Eligible Roles**: Both, Referrer (the user who shared the code) or Referee (the new user who signed up with it). Sent as `bonusEligibleRole` `BOTH` / `REFERRER` / `REFEREE` | `constants.ts:34-38`; `helper.ts:104-109,169-171`; `pages/Bonus/components/Form.tsx:421-430` |
+| When it is given | **Referral Type**: On Signup or On First Deposit. Sent as `referralType` `SIGNUP` / `FTD` | `constants.ts:40-43`; `helper.ts:111-115,172-174`; `Form.tsx:435-439` |
+| Amounts, On Signup | Fixed amounts: **Referrer Bonus** (sent as `referrerMinBonusAmount`) and **Referee Bonus** (sent as `maxBonusAmount`). Each field shows only when that side is eligible | `helper.ts:202-210`; `Form.tsx:443-461` |
+| Amounts, On First Deposit | The referee's **Minimum Deposit Amount** (`minDepositAmount`). For each eligible side, a release type (Fixed or Percentage) and an amount or percentage: referee `releaseType`, `maxBonusAmount`, `percentage`; referrer `referrerReleaseType`, `referrerMinBonusAmount`, `referrerPercentage` | `helper.ts:177-201`; `Form.tsx:465-540` |
+| Turnover | Referral policies can only use the **Bonus × multiplier** turnover formula (the deposit-based formula is hidden for referral) | `Form.tsx:221-224`; `constants.ts:22-25` |
+| Common settings | Approval (Auto or Manual), turnover multiplier, instalments, expiry days and the other shared policy fields | `helper.ts:126-152` |
+| Saved with | `POST /bonuses/upsert` | `store/api/bonsuApi.ts:15-22` (`upsertBonus`) |
+
+What the user then sees: a `ReferralBonus` row in the Bonus Statement, with its turnover and instalments ([Module 11](../11-bonuses/overview.md)). Applying a policy to a sign-up or first deposit happens in the backend (`INFERRED`; the user app sends only the referral code at sign-up).
 
 **Not part of referrals:** `getUserReference` (`GET /users/reference/user`, `store/api/userApi.ts:54-59`) only looks related by name. Its `reference` value is the P&L figure in the profile drawer (`ProfileDrawer.tsx:64-67`, `totalPL`).
 
@@ -116,8 +135,8 @@ All `OBSERVED` from source unless labelled.
 | F5 | The share message, with the brand name and marketing lines, is hard-coded in each language file, so changing it for a platform means editing every locale | `public/locales/*/common.json` (`referral.shareMessage`) |
 | F6 | **A link opens the register modal only on the first load of the app.** If a logged-in visitor opens it, the code is dropped from the URL. Nothing tells them the link is for new accounts | `useReferralRegisterModal.ts:21-33` |
 | F7 | `?mode=register` without `refCode` also opens the register modal | `useReferralRegisterModal.ts:21` |
-| F8 | **An empty code is sent as `""`**, not left out. The other implementation sends `referralCode` only when it is non-empty ([Login and Signup › contract table](../authentication/api-inventory.md#backend-contract-team-provided-2026-11-19-q-21)) | `useRegister.ts:50,97` (Q-60) |
-| F9 | No browser check of the code. A wrong code is only reported if the register request fails | `validations.ts:127` |
+| F8 | **An empty code is sent as `""`**, not left out; the backend reads a blank code as "no referral" (team, Q-60). The other implementation sends `referralCode` only when it is non-empty ([Login and Signup › contract table](../authentication/api-inventory.md#backend-contract-team-provided-2026-11-19-q-21)) | `useRegister.ts:50,97` (Q-60) |
+| F9 | No browser check of the code. A wrong code is only reported if the register request fails | `validations.ts:127` (Q-60 b) |
 | F10 | Demo users can open the page by typing the URL; they get a message instead of a redirect | `index.tsx:53-56` |
 
-Questions raised: Q-60, Q-61 in [open-questions.md](../../../inventory/open-questions.md).
+Questions raised: Q-60, Q-61 in [open-questions.md](../../../inventory/open-questions.md). Q-61 is resolved; Q-60 (a) is resolved and (b) is open.

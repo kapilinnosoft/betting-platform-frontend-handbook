@@ -42,7 +42,7 @@ Referral-specific rules:
 |---|---|---|
 | `referralCode` | The form value: the `refCode` from the link (field locked), a code typed by hand, or `""` when blank. Always present in the body | `useRegister.ts:50,59-63,97` |
 
-How the backend treats `""` or an unknown code: `BACKEND CONFIRMATION REQUIRED` (Q-60).
+A blank code (`""`) means no referral (team, Q-60). How the backend treats an unknown or inactive code: `BACKEND CONFIRMATION REQUIRED` (Q-60 b).
 
 ## Not used by this module
 

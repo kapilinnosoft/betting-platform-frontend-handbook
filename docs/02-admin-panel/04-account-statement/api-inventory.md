@@ -91,4 +91,4 @@ The Downline account-details tabs call the same request for a member ([A3 DL26](
 
 | Name | Request | Note |
 |---|---|---|
-| `exportGameAccountStatement` | `POST users/transactions/export-game-transactions` | Same parameters as AS3. No file calls `useExportGameAccountStatementMutation` at HEAD (`ExportApi.ts:789-821,847`). See Q-55 |
+| `exportGameAccountStatement` | `POST users/transactions/export-game-transactions` | Same parameters as AS3. Not used anywhere (team, Q-55). No file calls `useExportGameAccountStatementMutation` at HEAD (`ExportApi.ts:789-821,847`). See Q-55 |

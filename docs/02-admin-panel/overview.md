@@ -8,11 +8,15 @@
 
 ## Modules in this phase
 
+Modules are listed (and shown in the portal) in this order. The `#` is a fixed ID, not a position: new modules get the next free ID and are added **below Casino Control**.
+
 | # | Module | Files | Status |
 |---|---|---|---|
 | A1 | [Login and layout shell](01-login-and-layout/overview.md): login, MFA, "Login as", session, route guards, header, notifications, [sidebar](01-login-and-layout/sidebar.md) | overview, sidebar, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
 | A2 | [Dashboard](02-dashboard/overview.md): balance bar, live events, user management, analytics cards, charts, login summary | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
 | A3 | [Downline](03-downline/overview.md): hierarchy listing, create member, member actions, account details, settlement | overview, member-listing, create-member, member-actions, account-details, settlement, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE |
+| A7 | [Event Management](07-event-management/overview.md): Events, Fixtures and [Bet Config](07-event-management/bet-config.md); what each control changes on the User Panel | overview, bet-config, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
+| A8 | [Casino Control](08-casino-control/overview.md): category list, provider and game switches, Edit Game; what each control changes on the User Panel | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
 | A4 | [Account Statement](04-account-statement/overview.md): Deposit/Withdraw and Game Transaction tabs, filters, export | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
 | A5 | [Export Report History](05-export-history/overview.md): export list, status, download, registry of every export request | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |
 | A6 | [Change Password, Activity Log and Logout](06-settings-and-activity-log/overview.md): `/settings` password form, own login history, logout (linked to A1) | overview, api-inventory, polling-and-frequency | DOCUMENTATION COMPLETE (awaiting review) |

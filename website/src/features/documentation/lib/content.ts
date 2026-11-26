@@ -246,7 +246,24 @@ export async function getDocumentedModules(panel: PanelKey = 'user'): Promise<Mo
     }
   }
 
-  return modules.sort((a, b) => a.folder.localeCompare(b.folder));
+  const order = await moduleOrderFromOverview(panel);
+  const rank = (folder: string) => order.has(folder) ? order.get(folder)! : Number.MAX_SAFE_INTEGER;
+  return modules.sort((a, b) => rank(a.folder) - rank(b.folder) || a.folder.localeCompare(b.folder));
+}
+
+/**
+ * Module order as listed in the panel overview's "## Modules in this phase" table (the Markdown stays the
+ * source of truth for ordering). Folders not listed there fall back to folder-name order after the listed ones.
+ */
+async function moduleOrderFromOverview(panel: PanelKey): Promise<Map<string, number>> {
+  const order = new Map<string, number>();
+  const overview = await readFile(path.join(handbookRoot, PANELS[panel].overview), 'utf8').catch(() => '');
+  const section = overview.match(/^## Modules in this phase\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? '';
+  for (const match of section.matchAll(/\]\(([^/)\s]+)\/overview\.md\)/g)) {
+    const folder = match[1];
+    if (folder && !order.has(folder)) order.set(folder, order.size);
+  }
+  return order;
 }
 
 export async function getMarkdownDocument(relativePath: string): Promise<string> {
